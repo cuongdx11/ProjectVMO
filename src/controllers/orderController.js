@@ -15,7 +15,16 @@ const createOrder = async(req,res) => {
         res.status(500).json(error.message)
     }
 }
-
+const getOrderById = async(req,res,next) => {
+    try {
+        const {id}  = req.params
+        const order = await orderService.getOrderById(id)
+        res.status(200).json(order)
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
-    createOrder
+    createOrder,
+    getOrderById
 }

@@ -5,6 +5,7 @@ const Voucher = require("../models/voucherModel");
 const Item = require("../models/itemModel");
 const { sequelize } = require('../config/dbConfig');
 const { Op } = require('sequelize');
+const ErrorRes = require('../middlewares/errorHandlingMiddleware')
 
 const createOrder = async (user_id, items, voucher_code) => {
   const t = await sequelize.transaction();
@@ -92,7 +93,20 @@ const createOrder = async (user_id, items, voucher_code) => {
     throw error;
   }
 };
+const getOrderById = async(id) => {
+  try {
+    const order = await Order.findByPk(id)
+    if(!order){
+      throw new Error(`Order with id ${id} not found`)
+    }
+    return order;
+  } catch (error) {
+    throw error
+  }
+}
+
 
 module.exports = {
   createOrder,
+  getOrderById
 };
