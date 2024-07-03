@@ -3,6 +3,8 @@ const {Op} = require('sequelize')
 const FlashSale = require('../models/flashsaleModel')
 const nodemailer = require('nodemailer')
 const moment = require('moment');
+const Notification = require('../models/notificationModel')
+const User = require('../models/userModel')
 require('dotenv').config();
 const transporter = nodemailer.createTransport({
     service: 'gmail', // hoặc một dịch vụ email khác bạn sử dụng
@@ -14,9 +16,11 @@ const transporter = nodemailer.createTransport({
 
 const sendMailFlashSale = async(flashSale) => {
     try {
+        const users = await User.findAll();
+        const userEmails = users.map(user => user.email)
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: process.env.EMAIL,
+            to: userEmails.join(','),
             subject: `Flash Sale "${flashSale.name}" sắp bắt đầu!`,
             text: `Flash Sale "${flashSale.name}" sẽ bắt đầu sau 15 phút. Đừng bỏ lỡ!`,
             html: `<b>Flash Sale "${flashSale.name}" sẽ bắt đầu sau 15 phút. Đừng bỏ lỡ!</b>`
@@ -29,22 +33,27 @@ const sendMailFlashSale = async(flashSale) => {
 
 const checkFlashSale = async() => {
     try {
-        const now = new Date();
-        const nowUTC = new Date(now.getTime() - now.getTimezoneOffset() * 60000); // Chuyển đổi sang UTC để thống nhất
-        //Tính toán khung thời gian 15 phút tới theo UTC
-        const fifteenMinutesLater = new Date(nowUTC.getTime() + 15 * 60000);
-        // console.log(nowUTC)
-        // console.log(fifteenMinutesLater)
-        const upcomingFlashSales = await FlashSale.findAll({
-            where: {
-                start_time: {
-                    [Op.between]: [now, fifteenMinutesLater]
+        const now = new Date()
+        const nowUTC = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        const notificationsFlashSale = await Notification.findAll({
+            where:{
+                scheduled_time : {
+                    [Op.lte] : nowUTC
                 },
-                status: 'preparing'
-            }
-        });
-        for (let flashSale of upcomingFlashSales) {
-            await sendMailFlashSale(flashSale);
+                is_sent : false
+            },
+            include: [{
+                model: FlashSale,
+                where: {
+                    status: 'preparing'
+                }
+            }]
+        })
+        for(let notification of notificationsFlashSale){
+            await sendMailFlashSale(notification.FlashSale)
+            console.log('Da gui mail')
+            notification.is_sent = true
+            await notification.save()
         }
     } catch (error) {
         throw error
@@ -52,7 +61,7 @@ const checkFlashSale = async() => {
 }
 
 const runJob = () => {
-    cron.schedule('* * * * *', checkFlashSale);
+    cron.schedule('*/10 * * * *', checkFlashSale); // Chạy mỗi 10 giây
     console.log('Flash sale notification job started');
 }
 module.exports = {

@@ -5,6 +5,7 @@ const { sequelize, connectDatabase } = require('./src/config/dbConfig')
 const intRoutes = require('./src/routes')
 const app = express()
 const cronJobMailSale = require('./src/helpers/flashsaleNotification')
+const updateFlashSaleStatus = require('./src/helpers/updateFlashSaleStatus')
 //CRUD
 app.use(express.json())
 //client gui len la mang thi cai nay chuyen sang json
@@ -12,7 +13,8 @@ app.use(express.urlencoded({extended : true}))
 
 intRoutes(app)
 
-// cronJobMailSale.runJob()
+cronJobMailSale.runJob()
+updateFlashSaleStatus.runStatusUpdateJobMailStatus()
 
 
 
