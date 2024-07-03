@@ -1,42 +1,68 @@
+const ErrorRes = require('../helpers/ErrorRes')
 const Category = require('../models/categoryModel')
 
 const createCategory = async (categoryData) => {
     try {
+        const {name,position} = categoryData
+        if(!name || !position){
+            throw new ErrorRes(400 , 'Thiếu trường bắt buộc')
+        }
         const newCategory = await Category.create(categoryData)
-        return newCategory
+        return {
+            status : 'success',
+            message :'Tạo mới danh mục thành công',
+            data : newCategory
+        }
 
     } catch (error) {
-        throw new Error(`Error creating category: ${error.message}`)
+        throw error
     }
 }
 const getCategoryById = async (id) => {
     try {
         const category = await Category.findByPk(id)
         if(!category){
-            throw new Error('Category not found')
+            throw new ErrorRes(404,'Danh mục không tồn tại')
         }
-        return category;
+        return {
+            status : 'success',
+            message :'Lấy danh mục thành công',
+            data : category
+        }
     } catch (error) {
-        throw new Error(`Error fetching category`)
+        throw error
     }
 }
 
 const updateCategory = async (id,categoryData) => {
     try {
+        if(!id){
+            throw new ErrorRes(400 , 'Thiếu trường bắt buộc')
+        }
         const category = await getCategoryById(id)
         const updateCategory = await category.update(categoryData)
-        return updateCategory;
+        return {
+            status : 'success',
+            message :'Cập nhật danh mục thành công',
+            data : updateCategory
+        }
     } catch (error) {
-        throw new Error(`Error updating category`)
+        throw error
     }
 }
 const deleteCategory = async (id) => {
     try {
+        if(!id){
+            throw new ErrorRes(400 , 'Thiếu trường bắt buộc')
+        }
         const category = await getCategoryById(id)
         await category.destroy()
-        return { message: 'Category deleted successfully' }
+        return {
+            status : 'success',
+            message :'Xóa danh mục thành công',
+        }
     } catch (error) {
-        throw new Error(`Error deleting category`)
+        throw error
     }
 }
 module.exports = {

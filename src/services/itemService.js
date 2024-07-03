@@ -8,9 +8,12 @@ require('dotenv').config();
 const getAllItems = async() =>{
     try {
         const items = await Item.findAll()
-        return items
+        return {
+            status : 'success',
+            data : items
+        }
     } catch (error) {
-        throw new Error(`Error : ${error.message}`)
+        throw error
     }
 }
 const getPageItem = async({ page = 1, order = null,filter = null, orderBy = 'asc', limit = process.env.LIMIT, name = null, ...query }) => {
@@ -38,13 +41,14 @@ const getPageItem = async({ page = 1, order = null,filter = null, orderBy = 'asc
         });
 
         return {
+            status : 'success',
             items: rows,
             total: count,
             totalPages: Math.ceil(count / flimit),
             currentPage: page
         };
     } catch (error) {
-        throw new Error(`Error: ${error.message}`);
+        throw error
     }
 };
 
@@ -52,9 +56,15 @@ const getPageItem = async({ page = 1, order = null,filter = null, orderBy = 'asc
 const getItemById = async(id) => {
     try {
         const item = await Item.findByPk(id)
-        return item
+        if(!item){
+            throw new ErrorRes(404,'Sản phẩm không tồn tại')
+        }
+        return {
+            status : 'success',
+            data: item
+        }
     } catch (error) {
-        throw new Error(`Error : ${error.message}`)
+        throw error
     }
 }
 
@@ -73,7 +83,8 @@ const createItem = async(itemData) =>{
         }
         await transaction.commit();
         return {
-            message: 'Them san pham thanh cong',
+            status : 'success',
+            message: 'Thêm sản phẩm thành công',
             data : newItem
         }
     } catch (error) {
@@ -85,7 +96,7 @@ const createItem = async(itemData) =>{
                 await cloudinary.uploader.destroy(image);
             }
         }
-        throw new Error(`Error : ${error.message}`)
+        throw error
     }
 }
 
@@ -95,7 +106,7 @@ const updateItem = async(id,itemData) => {
         const updatedItem = await item.update(itemData)
         return updatedItem
     } catch (error) {
-        throw new Error(`Error : ${error.message}`)
+        throw error
     }
 }
 
@@ -106,10 +117,14 @@ const deleteItem = async(id) => {
             where: { item_id: id }
         });
         if(itemOrderCount > 0) {
-            throw new ErrorRes(400,'San pham co don hang, khong the xoa')
+            throw new ErrorRes(400,'Sản phẩm này có trong đơn hàng , không thể xóa')
         }
         const item = await getItemById(id)
         await item.destroy()
+        return {
+            status : 'success',
+            message: 'Xóa sản phẩm thành công'
+        }
     } catch (error) {
         throw error;
     }

@@ -6,7 +6,7 @@ const upload = require('../middlewares/uploadImageMiddleware')
 // router.get('/list',itemController.listItem)
 router.get('/',itemController.listItemById)
 router.get('/:id',itemController.itemById)
-router.post('/',[authMiddleware.authenticateToken,adminMiddleware.isAdmin],upload,itemController.createItem)
+router.post('/',[authMiddleware.authenticateToken,adminMiddleware.isAdmin],upload.uploadImageItem,itemController.createItem)
 router.put('/:id',itemController.updateItem)
 router.delete('/:id',itemController.deleteItem)
 

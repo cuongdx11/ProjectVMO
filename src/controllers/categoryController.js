@@ -13,6 +13,9 @@ const getCategories = async(req,res) => {
 const createCategory = async (req, res) => {
     try {
         const categoryData = req.body;
+        const file = req.file
+        const banner_image = file.path
+        categoryData.banner_image = banner_image
         const newCategory = await categoryService.createCategory(categoryData);
         return res.status(201).json(newCategory);
     } catch (error) {

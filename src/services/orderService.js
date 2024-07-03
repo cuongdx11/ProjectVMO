@@ -5,7 +5,7 @@ const Voucher = require("../models/voucherModel");
 const Item = require("../models/itemModel");
 const { sequelize } = require('../config/dbConfig');
 const { Op } = require('sequelize');
-const ErrorRes = require('../middlewares/errorHandlingMiddleware')
+const ErrorRes = require('../helpers/ErrorRes')
 
 const createOrder = async (user_id, items, voucher_code) => {
   const t = await sequelize.transaction();
@@ -27,9 +27,13 @@ const createOrder = async (user_id, items, voucher_code) => {
     let total_amount = 0;
     for (let item of items) {
       const dbitem = await Item.findByPk(item.item_id, { transaction: t });
-      if (!dbitem || dbitem.stock_quantity < item.quantity) {
+      if (!dbitem) {
         await t.rollback();
-        throw new Error("Sản phẩm không tồn tại hoặc không đủ số lượng");
+        throw new ErrorRes(404,'Sản phẩm không tồn tại')
+      }
+      if(dbitem.stock_quantity < item.quantity){
+        await t.rollback();
+        throw new ErrorRes(400,'Sản phẩm không đủ số lượng')
       }
       total_amount += dbitem.selling_price * item.quantity;
 
@@ -81,7 +85,7 @@ const createOrder = async (user_id, items, voucher_code) => {
     }
     await t.commit();
     return {
-      message: "Đơn hàng đã được tạo thành công",
+      message: 'Đơn hàng đã được tạo thành công',
       order: {
         id: order.id,
         total_amount: order.total_amount,
@@ -97,9 +101,13 @@ const getOrderById = async(id) => {
   try {
     const order = await Order.findByPk(id)
     if(!order){
-      throw new Error(`Order with id ${id} not found`)
+      throw new ErrorRes(404,'Đơn hàng không tồn tại')
     }
-    return order;
+    return {
+      status : 'success',
+      message: 'Lấy đơn hàng thành công',
+      order: order,
+    }
   } catch (error) {
     throw error
   }

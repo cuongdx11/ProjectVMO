@@ -22,7 +22,12 @@ const register = async (username, email, password) => {
         });
         await sendMail.sendVerificationEmail(email,verificationToken)
         console.log(`Verification email sent to ${email}`);
-        return newUser;
+        // return  newUser;
+        return {
+            status: "success",
+            message: "Đăng ký thành công , vui lòng kiểm tra mail để xác minh tài khoản",
+            data: newUser
+        }
     } catch (error) {
         throw error;
     }
@@ -35,7 +40,7 @@ const login = async (email, password) => {
 
         if (!user) {
             // throw new Error('User not found')
-            throw new ErrorRes(404, 'User not found')
+            throw new ErrorRes(404, 'Tài khoản không tồn tại')
         }
 
         // Kiểm tra mật khẩu
@@ -43,7 +48,7 @@ const login = async (email, password) => {
 
         if (!passwordMatch) {
             // throw new Error('Incorrect password');
-            throw new ErrorRes(401, 'Incorrect password')
+            throw new ErrorRes(401, 'Sai mật khẩu hoặc thiếu')
         }
 
         // Tạo accesstoken JWT
@@ -57,8 +62,9 @@ const login = async (email, password) => {
         user.refresh_token = refreshToken;
         await user.save();
         return {
-            status : 'Done',
-            data : {
+            status : "success",
+            message: "Đăng nhập thành công",
+            token : {
                 accessToken,
                 refreshToken
             }
@@ -74,12 +80,12 @@ const logout = async(accessToken) => {
         const user = await User.findOne({ where: { id: decode.userId } });
         if (!user) {
             // throw new Error('User not found')
-            throw new ErrorRes(404, 'User not found')
+            throw new ErrorRes(404, 'Tài khoản không tồn tại')
         }
         user.refresh_token = null;
         await user.save();
         return {
-            message: 'Dang xuat thanh cong'
+            message: "Đăng xuất thành công"
         }
     } catch (error) {
         throw error;
@@ -89,7 +95,7 @@ const forgetPass = async(email)  => {
     try {
         const user = await User.findOne({ where: { email } });
         if(!user){
-            throw new ErrorRes(404, 'User not found')
+            throw new ErrorRes(404, 'Tài khoản không tồn tại')
         }
         const resetPasswordToken = crypto.randomBytes(20).toString('hex');
         const resetPasswordExpires  = Date.now() + 3600000
@@ -98,7 +104,8 @@ const forgetPass = async(email)  => {
         await user.save()
         await sendMail.sendMailForgotPass(email,resetPasswordToken)
         return {
-            status : 'Kiem tra mail cua ban'
+            status : "success",
+            message: "Vui lòng kiểm tra email của bạn"
         }
     } catch (error) {
         throw error;
@@ -123,6 +130,7 @@ const resetPass = async(newPass,token) => {
         user.reset_password_expires = null
         await user.save()
         return {
+            status : 'success',
             message : 'Mật khẩu đã được đặt lại thành công'
         }
     } catch (error) {
@@ -136,12 +144,13 @@ const changePass = async(accessToken,newPass) => {
         const user = await User.findByPk(decoded.userId);
         if (!user) {
             // throw new Error('User not found');
-            throw new ErrorRes(404, 'User not found')
+            throw new ErrorRes(404, 'Tài khoản không tồn tại')
         }
         const hashedNewPassword = await bcrypt.hash(newPass, process.env.SLAT);
         user.password = hashedNewPassword;
         await user.save()
         return {
+            status : 'success',
             message : 'Mật khẩu đã được đổi thành công'
         }
     } catch (error) {
@@ -155,7 +164,7 @@ const verifyEmail = async (token) => {
 
         if (!user) {
             // throw new Error('User not found');
-            throw new ErrorRes(404, 'User not found')
+            throw new ErrorRes(404, 'Tài khoản không tồn tại')
         }
 
         user.is_verified = true;
@@ -172,13 +181,13 @@ const refreshToken = async(refreshToken) => {
         const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
         const user = await User.findByPk(decoded.userId);
         if(!user) {
-            throw new ErrorRes(404, 'User not found')
+            throw new ErrorRes(404, 'Tài khoản không tồn tại')
         }
         const accessToken = jwt.sign({ userId: user.id, email: user.email,is_admin : user.is_admin  }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '500s' // Thời gian hết hạn của token
         });
         return {
-            status : 'Done',
+            status : 'success',
             accessToken : accessToken
         }
 

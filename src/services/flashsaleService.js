@@ -3,6 +3,7 @@ const FlashSale = require('../models/flashsaleModel')
 const FlashSaleItem = require('../models/flashsaleitemModel')
 const Notification = require('../models/notificationModel')
 const Item = require('../models/itemModel')
+const ErrorRes = require('../helpers/ErrorRes')
 const createFlashSale = async(flashsaleData) => {
     const transaction = await sequelize.transaction()
     try {
@@ -15,7 +16,11 @@ const createFlashSale = async(flashsaleData) => {
         }
         await Notification.create(notificationFlashSaleData,{transaction})
         await transaction.commit();
-        return newFlashSale;
+        return {
+            status : "success",
+            message : "Tạo thành công",
+            data : newFlashSale
+        }
     } catch (error) {
         await transaction.rollback();
         throw error
@@ -28,7 +33,8 @@ const createFlashSaleItem = async(flashsaleItemData) => {
         for(const itemData of itemsData){
             const item = await Item.findByPk(itemData.item_id)
             if (!item) {
-                throw new Error(`Item with id ${itemData.item_id} not found`);
+                // throw new Error(`Item with id ${itemData.item_id} not found`);
+                throw new ErrorRes(404,'Sản phẩm không tồn tại')
             }
             const flashSaleItemData = {
                 ...itemData,
@@ -38,7 +44,11 @@ const createFlashSaleItem = async(flashsaleItemData) => {
             const newFlashSaleItem = await FlashSaleItem.create(flashSaleItemData);
             createdItems.push(newFlashSaleItem);
         }
-        return createdItems
+        return {
+            status : "success",
+            message : "Tạo thành công",
+            data : createdItems
+        }
     } catch (error) {
         throw error
     }

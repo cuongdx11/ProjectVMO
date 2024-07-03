@@ -19,7 +19,7 @@ const login = async (req, res,next) => {
 
     try {
         const token = await authService.login(email, password);
-        res.status(200).json({ token });
+        res.status(200).json( token );
     } catch (error) {
         next(error)
     }

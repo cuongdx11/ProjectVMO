@@ -14,7 +14,7 @@ app.use(express.urlencoded({extended : true}))
 intRoutes(app)
 
 cronJobMailSale.runJob()
-updateFlashSaleStatus.runStatusUpdateJobMailStatus()
+// updateFlashSaleStatus.runStatusUpdateJobMailStatus()
 
 
 

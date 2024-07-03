@@ -1,4 +1,6 @@
 const User = require('../models/userModel')
+const ErrorRes = require('../helpers/ErrorRes')
+
 require('dotenv').config();
 
 const getAllUser = async({page = 1,order=null,filter=null,orderBy='asc',limit=process.env.LIMIT,name = null,...query}) => {
@@ -32,7 +34,7 @@ const getAllUser = async({page = 1,order=null,filter=null,orderBy='asc',limit=pr
         };
 
     } catch (error) {
-        throw new Error(`Error: ${error.message}`);
+        throw error
     }
 }
 
@@ -40,17 +42,25 @@ const getUserById = async(id) => {
     try {
         const user = await User.findByPk(id);
         if(!user){
-            throw new Error(`User with id ${id} not found`)
+            throw new ErrorRes(404,'Tài khoản không tồn tại')
         }
-        return user;
+        return {
+            status : 'success',
+            message :'Lấy tài khoản thành công',
+            user
+        }
     } catch (error) {
-        throw new Error(`Error: ${error.message}`);
+        throw error
     }
 }
 const createUser = async(user) => {
     try {
         const newUser = await User.create(user);
-        return newUser;
+        return {
+            status : 'success',
+            message :'Tạo tài khoản thành công',
+            newUser
+        }
     } catch (error) {
         throw error;
     }
@@ -59,7 +69,11 @@ const updateUser = async(id,userData) => {
     try {
         const user =  await getUserById(id);
         const updatedUser = await user.update(userData);
-        return updatedUser;
+        return {
+            status : 'success',
+            message :'Cập nhật tài khoản thành công',
+            updatedUser
+        }
     } catch (error) {
         throw error;
     }
@@ -69,10 +83,11 @@ const deleteUser = async(id) => {
         const user =  await getUserById(id);
         await user.destroy();
         return {
-            message: `User with id ${id} deleted successfully`
+            status : 'success',
+            message :'Xóa tài khoản thành công'
         }
     } catch (error) {
-        
+        throw error;
     }
 }
 module.exports = {
