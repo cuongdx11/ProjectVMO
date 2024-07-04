@@ -18,7 +18,38 @@ const createFlashSaleItem = async(req,res) => {
         return res.status(500).json({error: error.message})
     }
 }
+const getFlashSaleById = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const flashSale = await flashSaleService.getFlashSaleById(id)
+        return res.status(200).json(flashSale)
+    } catch (error) {
+        next(error)
+    }
+}
+const updateFlashSale = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const flashSaleData = req.body
+        const flashSale = await flashSaleService.updateFlashSale(id,flashSaleData)
+        return res.status(200).json(flashSale)
+    } catch (error) {
+        next(error)
+    }
+}
+const deleteFlashSale = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const flashSale = await flashSaleService.deleteFlashSale(id)
+        return res.status(200).json(flashSale)
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     createFlashSale,
-    createFlashSaleItem
+    createFlashSaleItem,
+    getFlashSaleById,
+    updateFlashSale,
+    deleteFlashSale
 }

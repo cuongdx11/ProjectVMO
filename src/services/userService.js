@@ -69,7 +69,10 @@ const createUser = async(user) => {
 }
 const updateUser = async(id,userData) => {
     try {
-        const user =  await getUserById(id);
+        const user = await User.findByPk(id);
+        if(!user){
+            throw new ErrorRes(404,'Tài khoản không tồn tại')
+        }
         const updatedUser = await user.update(userData);
         return {
             status : 'success',
@@ -82,7 +85,10 @@ const updateUser = async(id,userData) => {
 }
 const deleteUser = async(id) => {
     try {
-        const user =  await getUserById(id);
+        const user = await User.findByPk(id);
+        if(!user){
+            throw new ErrorRes(404,'Tài khoản không tồn tại')
+        }
         await user.destroy();
         return {
             status : 'success',

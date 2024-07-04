@@ -12,6 +12,11 @@ const Voucher = sequelize.define('Voucher', {
         allowNull: false,
         unique: true
     },
+    type: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'general' // or any default value you prefer
+    },
     discount_amount: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
@@ -35,6 +40,11 @@ const Voucher = sequelize.define('Voucher', {
     remaining_quantity: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    min_order_value: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0
     },
     created_at: {
         type: DataTypes.DATE,

@@ -116,7 +116,10 @@ const createItem = async(itemData) =>{
 
 const updateItem = async(id,itemData) => {
     try {
-        const item = await getItemById(id)
+        const item = await Item.findByPk(id)
+        if(!item){
+            throw new ErrorRes(404,'Sản phẩm không tồn tại')
+        }
         const updatedItem = await item.update(itemData)
         return updatedItem
     } catch (error) {
@@ -133,7 +136,10 @@ const deleteItem = async(id) => {
         if(itemOrderCount > 0) {
             throw new ErrorRes(400,'Sản phẩm này có trong đơn hàng , không thể xóa')
         }
-        const item = await getItemById(id)
+        const item = await Item.findByPk(id)
+        if(!item){
+            throw new ErrorRes(404,'Sản phẩm không tồn tại')
+        }
         await item.destroy()
         return {
             status : 'success',

@@ -4,7 +4,7 @@ const category = require('../controllers/categoryController')
 const authMiddleware = require('../middlewares/authMiddleware')
 const adminMiddleware = require('../middlewares/adminMiddleware')
 
-router.get('/list',category.getCategories)
+router.get('/',category.getCategories)
 router.get('/:id',category.getCategoryById)
 router.put('/:id',category.updateCategory)
 router.delete('/:id',category.deleteCategory)

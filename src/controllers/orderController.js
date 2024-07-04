@@ -24,7 +24,28 @@ const getOrderById = async(req,res,next) => {
         next(error)
     }
 }
+const updateOrder = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const orderData = req.body
+        const updateOrder = await orderService.updateOrder(id,orderData)
+        res.status(200).json(updateOrder)
+    } catch (error) {
+        next(error)
+    }
+}
+const deleteOrder = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const deleteOrder = await orderService.deleteOrder(id)
+        res.status(200).json(deleteOrder)
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     createOrder,
-    getOrderById
+    getOrderById,
+    updateOrder,
+    deleteOrder
 }

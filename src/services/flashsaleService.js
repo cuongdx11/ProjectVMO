@@ -4,6 +4,7 @@ const FlashSaleItem = require('../models/flashsaleitemModel')
 const Notification = require('../models/notificationModel')
 const Item = require('../models/itemModel')
 const ErrorRes = require('../helpers/ErrorRes')
+
 const createFlashSale = async(flashsaleData) => {
     const transaction = await sequelize.transaction()
     try {
@@ -53,7 +54,50 @@ const createFlashSaleItem = async(flashsaleItemData) => {
         throw error
     }
 }
+const getFlashSaleById = async(id) => {
+    try {
+        const flashSale = await FlashSale.findByPk(id)
+        if(!flashSale){
+            throw new ErrorRes(404,'Flash sale không tồn tại')
+        }
+        return{
+            status : "success",
+            message : "Lấy thành công",
+            data : flashSale
+        }
+    } catch (error) {
+        throw error
+    }
+}
+const updateFlashSale = async(id,flashSaleData) => {
+    try {
+        const flashSale = await FlashSale.findByPk(id)
+        const updatedFlashSale = await flashSale.update(flashSaleData)
+        return{
+            status : "success",
+            message : "Cập nhật thành công",
+            data : updatedFlashSale
+        }
+    } catch (error) {
+        throw error
+    }
+}
+const deleteFlashSale = async(id) => {
+    try {
+        const flashSale = await FlashSale.findByPk(id)
+        await flashSale.destroy()
+        return{
+            status : "success",
+            message : "Xóa thành công"
+        }
+    } catch (error) {
+        throw error
+    }
+}
 module.exports = {
     createFlashSale,
-    createFlashSaleItem
+    createFlashSaleItem,
+    getFlashSaleById,
+    updateFlashSale,
+    deleteFlashSale
 }

@@ -4,6 +4,7 @@ const category = require('./categoryRoutes')
 const item = require('./itemRoutes')
 const order = require('./orderRoutes')
 const flashSale = require('./flashsaleRoutes')
+const voucher = require('./voucherRoutes')
 const errorHandling = require('../middlewares/errorHandlingMiddleware')
 const intRoutes = (app) =>{
 
@@ -13,7 +14,7 @@ const intRoutes = (app) =>{
     app.use('/api/v1/auth',auth)
     app.use('/api/v1/orders',order)
     app.use('/api/v1/flash-sale',flashSale)
-
+    app.use('/api/v1/vouchers',voucher)
     app.use(errorHandling)
 
     
