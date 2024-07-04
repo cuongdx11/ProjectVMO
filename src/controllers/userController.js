@@ -61,13 +61,26 @@ const deleteUser = async(req , res) => {
         res.status(404).json({ message: 'Internal server error' });
     }
 }
+const getOrdersForUser = async (req, res, next) => {
+    try {
+        // const { userId } = req.params;
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1]; // Lấy token sau 'Bearer'
+        const { page, limit, status } = req.query;
+        const result = await userService.getUserOrders(token, { page, limit, status });
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
 module.exports = {
     getUsers,
     changePass,
     getUserById,
     createUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    getOrdersForUser
     
     
 }

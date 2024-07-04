@@ -100,6 +100,9 @@ const createOrder = async (user_id, items, voucher_code) => {
 const getOrderById = async(id) => {
   try {
     const order = await Order.findByPk(id)
+    const orderItem = await OrderItem.findAll({
+      where: {order_id: id}
+    })
     if(!order){
       throw new ErrorRes(404,'Đơn hàng không tồn tại')
     }
@@ -107,6 +110,7 @@ const getOrderById = async(id) => {
       status : 'success',
       message: 'Lấy đơn hàng thành công',
       order: order,
+      orderItem: orderItem
     }
   } catch (error) {
     throw error

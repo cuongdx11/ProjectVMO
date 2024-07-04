@@ -1,5 +1,7 @@
 const User = require('../models/userModel')
 const ErrorRes = require('../helpers/ErrorRes')
+const Order = require('../models/orderModel')
+const jwt = require('jsonwebtoken');
 
 require('dotenv').config();
 
@@ -90,10 +92,49 @@ const deleteUser = async(id) => {
         throw error;
     }
 }
+const getUserOrders = async (token, { page = 1, limit = process.env.LIMIT, status = null }) => {
+    try {
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const userId = decoded.userId
+        const user = await User.findByPk(userId);
+        if (!user) {
+            throw new ErrorRes(404, 'Tài khoản không tồn tại');
+        }
+
+        const queries = { raw: true, nest: true };
+        const offset = (page <= 1) ? 0 : (page - 1);
+        const flimit = +limit;
+        queries.offset = offset * flimit;
+        queries.limit = flimit;
+
+        const where = {user_id:  userId };
+        if (status) {
+            where.status = status;
+        }
+
+        const { count, rows } = await Order.findAndCountAll({
+            where,
+            ...queries,
+            order: [['created_at', 'DESC']] // Sắp xếp theo thời gian tạo mới nhất
+        });
+
+        return {
+            status: 'success',
+            message: 'Lấy danh sách đơn hàng thành công',
+            orders: rows,
+            total: count,
+            totalPages: Math.ceil(count / flimit),
+            currentPage: page
+        };
+    } catch (error) {
+        throw error;
+    }
+}
 module.exports = {
     getAllUser,
     getUserById,
     createUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    getUserOrders
 }

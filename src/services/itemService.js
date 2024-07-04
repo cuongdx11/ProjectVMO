@@ -3,6 +3,8 @@ const ItemImage = require('../models/itemimageModel')
 const { Op } = require('sequelize');
 const cloudinary = require('cloudinary').v2;
 const OrderItem = require('../models/orderitemModel')
+const FlashSaleItem = require('../models/flashsaleitemModel')
+const FlashSale = require('../models/flashsaleModel')
 const ErrorRes = require('../helpers/ErrorRes')
 require('dotenv').config();
 const getAllItems = async() =>{
@@ -59,6 +61,18 @@ const getItemById = async(id) => {
         if(!item){
             throw new ErrorRes(404,'Sản phẩm không tồn tại')
         }
+        const flashSaleItem = await FlashSaleItem.findOne({
+            where: { item_id: id }
+        })
+        let priceSale = item.selling_price
+        if (flashSaleItem) {
+            const now = new Date()
+            const flashSale = await FlashSale.findByPk(flashSaleItem.flash_sale_id) 
+            if (flashSale && now >= flashSale.start_time && now <= flashSale.end_time) {
+                priceSale = flashSaleItem.flash_sale_price;
+            }
+        }
+        item.selling_price = priceSale
         return {
             status : 'success',
             data: item
