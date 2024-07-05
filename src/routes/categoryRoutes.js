@@ -6,7 +6,7 @@ const adminMiddleware = require('../middlewares/adminMiddleware')
 
 router.get('/',category.getCategories)
 router.get('/:id',category.getCategoryById)
-router.put('/:id',category.updateCategory)
+router.put('/:id',upload.uploadImageCategory,category.updateCategory)
 router.delete('/:id',category.deleteCategory)
 router.post('/',[authMiddleware.authenticateToken,adminMiddleware.isAdmin],upload.uploadImageCategory,category.createCategory)
 

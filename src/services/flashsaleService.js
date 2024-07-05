@@ -94,10 +94,51 @@ const deleteFlashSale = async(id) => {
         throw error
     }
 }
+const getFlashSaleItem = async(id) => {
+    try {
+        const flashSaleeItems = await FlashSaleItem.findAndCountAll({
+            where : {
+                flash_sale_id : id
+            }
+        })
+        if(!flashSaleeItems){
+            throw new ErrorRes(404,'Không có sản phẩm nào')
+        }
+        return{
+            status : "success",
+            message : "Lấy thành công",
+            data : flashSaleeItems
+        }
+    } catch (error) {
+        throw error
+    }
+}
+const getFlashSaleItemById = async(id,item_id) => {
+    try {
+        const flashSaleItem = await FlashSaleItem.findOne({
+            where : {
+                flash_sale_id : id,
+                item_id : item_id
+            }
+        })
+        if(!flashSaleItem){
+            throw new ErrorRes(404,'Không có sản phẩm nào')
+        }
+        return{
+            status : "success",
+            message : "Lấy thành công",
+            data : flashSaleItem
+        }
+    } catch (error) {
+        throw error
+    }
+}
 module.exports = {
     createFlashSale,
     createFlashSaleItem,
     getFlashSaleById,
     updateFlashSale,
-    deleteFlashSale
+    deleteFlashSale,
+    getFlashSaleItem,
+    getFlashSaleItemById
 }

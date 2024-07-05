@@ -46,10 +46,31 @@ const deleteFlashSale = async(req,res,next) => {
         next(error)
     }
 }
+
+const getFlashSaleItem = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const flashSaleItem = await flashSaleService.getFlashSaleItem(id)
+        return res.status(200).json(flashSaleItem)
+    } catch (error) {
+        next(error)
+    }
+}
+const getFlashSaleItemById = async(req,res,next) => {
+    try {
+        const {id,item_id} = req.params
+        const flashSaleItem = await flashSaleService.getFlashSaleItemById(id,item_id)
+        return res.status(200).json(flashSaleItem)
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     createFlashSale,
     createFlashSaleItem,
     getFlashSaleById,
     updateFlashSale,
-    deleteFlashSale
+    deleteFlashSale,
+    getFlashSaleItem,
+    getFlashSaleItemById
 }

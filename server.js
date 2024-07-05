@@ -10,7 +10,7 @@ const updateFlashSaleStatus = require('./src/helpers/updateFlashSaleStatus')
 app.use(express.json())
 //client gui len la mang thi cai nay chuyen sang json
 app.use(express.urlencoded({extended : true}))
-
+// app.use(cors());
 intRoutes(app)
 
 cronJobMailSale.runJob()

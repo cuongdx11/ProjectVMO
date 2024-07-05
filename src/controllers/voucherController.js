@@ -18,7 +18,49 @@ const checkVoucher = async(req,res,next) => {
         next(error)
     }
 }
+const createVoucher = async(req,res,next) => {
+    try {
+       const voucherData = req.body
+       const voucher = await voucherService.createVoucher(voucherData)
+       res.status(201).json(voucher)
+    } catch (error) {
+       next(error)
+    }
+}
+const getVoucherById = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const voucher = await voucherService.getVoucherById(id)
+        res.status(200).json(voucher)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const updateVoucher = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const voucherData = req.body
+        const voucher = await voucherService.updateVoucher(id,voucherData)
+        res.status(200).json(voucher)
+    } catch (error) {
+       next(error) 
+    }
+}
+const deleteVoucher = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const voucher = await voucherService.deleteVoucher(id)
+        res.status(200).json(voucher)
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports ={
     getVoucherAvailable,
-    checkVoucher
+    checkVoucher,
+    createVoucher,
+    getVoucherById,
+    updateVoucher,
+    deleteVoucher
 }

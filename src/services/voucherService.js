@@ -66,7 +66,68 @@ const checkVoucher = async(voucher_code,user_id,orderTotal) => {
         throw error
     }
 }
+const createVoucher = async(voucherData) => {
+    try {
+        const voucher = await Voucher.create(voucherData)
+        return {
+            status : 'success',
+            message: 'Tạo thành công voucher',
+            voucher
+        }
+    } catch (error) {
+        
+    }
+}
+const getVoucherById = async(id) => {
+    try {
+        const voucher = await Voucher.findByPk(id)
+        if(!voucher){
+            throw new ErrorRes(404,'Voucher không tồn tại')
+        }
+        return {
+            status : 'success',
+            voucher
+        }
+    } catch (error) {
+        throw error
+    }
+}
+const updateVoucher = async(id,voucherData) => {
+    try {
+        const voucher = await Voucher.findByPk(id)
+        if(!voucher){
+            throw new ErrorRes(404,'Voucher không tồn tại')
+        }
+        const updatedVoucher = await voucher.update(voucherData)
+        return {
+            status : 'success',
+            message: 'Cập nhật voucher thành công',
+            updatedVoucher
+        }
+    } catch (error) {
+        throw error
+    }
+}
+const deleteVoucher = async(id) => {
+    try {
+        const voucher = await Voucher.findByPk(id)
+        if(!voucher){
+            throw new ErrorRes(404,'Voucher không tồn tại')
+        }
+        await voucher.destroy()
+        return {
+            status : 'success',
+            message: 'Xóa voucher thành công'
+        }
+    } catch (error) {
+        throw error
+    }
+}
 module.exports = {
     getVoucherAvailable,
-    checkVoucher
+    checkVoucher,
+    getVoucherById,
+    createVoucher,
+    updateVoucher,
+    deleteVoucher
 }

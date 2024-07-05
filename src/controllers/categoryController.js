@@ -36,7 +36,10 @@ const getCategoryById = async (req, res) => {
 const updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
+        const file = req.file
+        const banner_image = file.path
         const categoryData = req.body;
+        categoryData.banner_image = banner_image
         const updatedCategory = await categoryService.updateCategory(id, categoryData);
         return res.status(200).json(updatedCategory);
     } catch (error) {

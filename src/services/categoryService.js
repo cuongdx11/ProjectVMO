@@ -40,6 +40,9 @@ const updateCategory = async (id,categoryData) => {
             throw new ErrorRes(400 , 'Thiếu trường bắt buộc')
         }
         const category = await Category.findByPk(id)
+        if(!category){
+            throw new ErrorRes(404,'Danh mục không tồn tại')
+        }
         const updateCategory = await category.update(categoryData)
         return {
             status : 'success',
