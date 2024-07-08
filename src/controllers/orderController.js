@@ -3,7 +3,7 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
 
-const createOrder = async(req,res) => {
+const createOrder = async(req,res,next) => {
     try {
         const { items, voucher_code } = req.body;
         const authHeader = req.headers['authorization'];
@@ -12,7 +12,7 @@ const createOrder = async(req,res) => {
         const newOrder = await orderService.createOrder(decode.userId,items,voucher_code)
         res.status(201).json(newOrder)
     } catch (error) {
-        res.status(500).json(error.message)
+        next(error)
     }
 }
 const getOrderById = async(req,res,next) => {

@@ -1,21 +1,21 @@
 const flashSaleService = require('../services/flashsaleService')
 
-const createFlashSale = async(req,res) => {
+const createFlashSale = async(req,res,next) => {
     try {
         const flashSaleData = req.body
         const flashSale = await flashSaleService.createFlashSale(flashSaleData);
         return res.status(200).json({flashSale})
     } catch (error) {
-        return res.status(500).json({error: error.message})
+        next(error)
     }
 }
-const createFlashSaleItem = async(req,res) => {
+const createFlashSaleItem = async(req,res,next) => {
     try {
         const flashSaleItemData = req.body
         const flashSaleItem = await flashSaleService.createFlashSaleItem(flashSaleItemData);
         return res.status(200).json({flashSaleItem})
     } catch (error) {
-        return res.status(500).json({error: error.message})
+        next(error)
     }
 }
 const getFlashSaleById = async(req,res,next) => {

@@ -1,16 +1,15 @@
 const category = require('../models/categoryModel')
 const categoryService = require('../services/categoryService')
-const getCategories = async(req,res) => {
+const getCategories = async(req,res,next) => {
     try {
         const categories = await categoryService.getCatgories(req.query)
         res.status(200).json(categories);
     } catch (error) {
-        console.error('Error getting categories:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        next(error)
     }
 }
 
-const createCategory = async (req, res) => {
+const createCategory = async (req, res,next) => {
     try {
         const categoryData = req.body;
         const file = req.file
@@ -19,7 +18,7 @@ const createCategory = async (req, res) => {
         const newCategory = await categoryService.createCategory(categoryData);
         return res.status(201).json(newCategory);
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        next(error)
     }
 };
 
@@ -33,7 +32,7 @@ const getCategoryById = async (req, res) => {
     }
 };
 
-const updateCategory = async (req, res) => {
+const updateCategory = async (req, res,next) => {
     try {
         const { id } = req.params;
         const file = req.file
@@ -43,17 +42,17 @@ const updateCategory = async (req, res) => {
         const updatedCategory = await categoryService.updateCategory(id, categoryData);
         return res.status(200).json(updatedCategory);
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        next(error)
     }
 };
 
-const deleteCategory = async (req, res) => {
+const deleteCategory = async (req, res,next) => {
     try {
         const { id } = req.params;
         await categoryService.deleteCategory(id);
         return res.status(200).json({ message: 'Category deleted successfully' });
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        next(error)
     }
 };
 

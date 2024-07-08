@@ -41,10 +41,26 @@ const getPageItem = async({ page = 1, order = null,filter = null, orderBy = 'asc
             where: query,
             ...queries
         });
+        // Lấy danh sách item_id từ các item đã truy vấn
+        const itemIds = rows.map(item => item.id);
 
+        // Truy vấn để lấy tất cả ảnh chi tiết của các item
+        const itemImages = await ItemImage.findAll({
+            where: {
+                item_id: {
+                    [Op.in]: itemIds
+                }
+            }
+        });
+
+        // Kết hợp ảnh chi tiết vào các item
+        const itemsWithImages = rows.map(item => {
+            item.itemImages = itemImages.filter(image => image.item_id === item.id);
+            return item;
+        });
         return {
             status : 'success',
-            items: rows,
+            items: itemsWithImages,
             total: count,
             totalPages: Math.ceil(count / flimit),
             currentPage: page
@@ -58,9 +74,13 @@ const getPageItem = async({ page = 1, order = null,filter = null, orderBy = 'asc
 const getItemById = async(id) => {
     try {
         const item = await Item.findByPk(id)
+        const itemImages = await ItemImage.findAll({
+            where: { item_id: id }
+        })
         if(!item){
             throw new ErrorRes(404,'Sản phẩm không tồn tại')
         }
+        item.setDataValue('itemImages', itemImages)
         return item
     } catch (error) {
         throw error

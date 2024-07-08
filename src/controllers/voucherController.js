@@ -1,12 +1,12 @@
 const Voucher = require('../models/voucherModel')
 const voucherService = require('../services/voucherService')
 
-const getVoucherAvailable = async(req,res) => {
+const getVoucherAvailable = async(req,res,next) => {
     try {
         const vouchers = await voucherService.getVoucherAvailable(req.query)
         res.status(200).json(vouchers)
     } catch (error) {
-        res.status(500).json({message: error.message})
+        next(error)
     }
 }
 const checkVoucher = async(req,res,next) => {

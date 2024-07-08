@@ -1,28 +1,26 @@
 const itemService = require('../services/itemService')
 const cloudinary = require('cloudinary').v2;
 
-const listItem  = async(req , res) => {
+const listItem  = async(req , res,next) => {
     try {
         const listItem = await itemService.getAllItems()
         res.status(200).json(listItem);
     } catch (error) {
         console.error('Error :', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
+        next(error)    }
 }
 
-const listItemById  = async(req , res) => {
+const listItemById  = async(req , res,next) => {
     try {
         
         const pageItem = await itemService.getPageItem(req.query)
         return res.status(200).json(pageItem);
     } catch (error) {
         console.error('Error :', error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
+        next(error)    }
 }
 
-const itemById = async(req, res) => {
+const itemById = async(req, res,next) => {
     try {
         const {id} = req.params;
         const flashsale = req.flashsale
@@ -32,12 +30,11 @@ const itemById = async(req, res) => {
             flashsale
         });
     } catch (error) {
-        console.error('Error :', error);
-        return res.status(500).json({ message: 'Internal server error' });
+        next(error)
     }
 }
 
-const createItem = async(req ,res) =>{
+const createItem = async(req ,res,next) =>{
     try {
         const itemData = req.body
         const files = req.files
@@ -51,12 +48,11 @@ const createItem = async(req ,res) =>{
         const newItem = await itemService.createItem(itemData)
         res.status(201).json(newItem);
     } catch (error) {
-        console.error('Error :', error);
-        res.status(500).json({ message: 'Internal server error' });
+        next(error)
     }
 }
 
-const updateItem = async(req ,res) =>{
+const updateItem = async(req ,res,next) =>{
     try {
         const {id} = req.params
         const itemData = req.body
@@ -70,8 +66,7 @@ const updateItem = async(req ,res) =>{
 
         return res.status(200).json(updateItem);
     } catch (error) {
-        console.error('Error :', error);
-        return res.status(500).json({ message: 'Internal server error' });
+        next(error)
     }
 }
 
