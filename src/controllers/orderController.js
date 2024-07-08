@@ -43,9 +43,19 @@ const deleteOrder = async(req,res,next) => {
         next(error)
     }
 }
+const cancelledOrder = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const cancelledOrder = await orderService.cancelOrder(id)
+        res.status(200).json(cancelledOrder)
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     createOrder,
     getOrderById,
     updateOrder,
-    deleteOrder
+    deleteOrder,
+    cancelledOrder
 }

@@ -124,7 +124,8 @@ const resetPass = async(newPass,token) => {
         if(!user){
             throw new ErrorRes(404, 'Token không hợp lệ hoặc đã hết hạn')
         }
-        const hashedNewPassword = await bcrypt.hash(newPass, process.env.SLAT);
+        const Salt = parseInt(process.env.SALT, 10);
+        const hashedNewPassword = await bcrypt.hash(newPass, Salt);
         user.password = hashedNewPassword;
         user.reset_password_token = null
         user.reset_password_expires = null

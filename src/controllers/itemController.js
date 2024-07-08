@@ -25,8 +25,12 @@ const listItemById  = async(req , res) => {
 const itemById = async(req, res) => {
     try {
         const {id} = req.params;
+        const flashsale = req.flashsale
         const item = await itemService.getItemById(id);
-        return res.status(200).json(item);
+        return res.status(200).json({
+            item,
+            flashsale
+        });
     } catch (error) {
         console.error('Error :', error);
         return res.status(500).json({ message: 'Internal server error' });
@@ -56,6 +60,12 @@ const updateItem = async(req ,res) =>{
     try {
         const {id} = req.params
         const itemData = req.body
+        const files = req.files
+        const thumbnail = files.thumbnail ? files.thumbnail[0].path : null;
+        const images = files.images ? files.images.map(file => file.path) : [];
+         // Thêm đường dẫn thumbnail và images vào itemData
+        itemData.thumbnail = thumbnail;
+        itemData.images = images;
         const updateItem = await itemService.updateItem(id , itemData)
 
         return res.status(200).json(updateItem);

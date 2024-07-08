@@ -1,6 +1,11 @@
 const express = require('express')
 require('dotenv').config();
 const cors = require('cors')
+const swaggerUi = require('swagger-ui-express');
+const fs = require("fs")
+const YAML = require('yaml')
+const file  = fs.readFileSync('./vmo.yaml', 'utf8')
+const swaggerDocument = YAML.parse(file)
 const { sequelize, connectDatabase } = require('./src/config/dbConfig')
 const intRoutes = require('./src/routes')
 const app = express()
@@ -13,8 +18,9 @@ app.use(express.urlencoded({extended : true}))
 // app.use(cors());
 intRoutes(app)
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 cronJobMailSale.runJob()
-// updateFlashSaleStatus.runStatusUpdateJobMailStatus()
+updateFlashSaleStatus.runStatusUpdateJob()
 
 
 

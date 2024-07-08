@@ -61,22 +61,7 @@ const getItemById = async(id) => {
         if(!item){
             throw new ErrorRes(404,'Sản phẩm không tồn tại')
         }
-        const flashSaleItem = await FlashSaleItem.findOne({
-            where: { item_id: id }
-        })
-        let priceSale = item.selling_price
-        if (flashSaleItem) {
-            const now = new Date()
-            const flashSale = await FlashSale.findByPk(flashSaleItem.flash_sale_id) 
-            if (flashSale && now >= flashSale.start_time && now <= flashSale.end_time) {
-                priceSale = flashSaleItem.flash_sale_price;
-            }
-        }
-        item.selling_price = priceSale
-        return {
-            status : 'success',
-            data: item
-        }
+        return item
     } catch (error) {
         throw error
     }
@@ -121,7 +106,11 @@ const updateItem = async(id,itemData) => {
             throw new ErrorRes(404,'Sản phẩm không tồn tại')
         }
         const updatedItem = await item.update(itemData)
-        return updatedItem
+        return {
+            status : 'success',
+            message: 'Cập nhật sản phẩm thành công',
+            data : updatedItem
+        }
     } catch (error) {
         throw error
     }

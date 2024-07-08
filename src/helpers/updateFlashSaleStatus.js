@@ -38,7 +38,7 @@ const updateFlashSaleStatus = async() => {
 }
 
 const runStatusUpdateJob = () => {
-    cron.schedule('*/10 * * * *', updateFlashSaleStatus); // Chạy mỗi 10 phut
+    cron.schedule('* * * * *', updateFlashSaleStatus); // Chạy mỗi 10 phut
     console.log('Flash sale status update job started');
 }
 

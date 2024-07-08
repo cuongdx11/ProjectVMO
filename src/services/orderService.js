@@ -174,10 +174,42 @@ const deleteOrder = async(id) => {
     throw error
   }
 }
+const cancelOrder = async(id) => {
+  try {
+    const order = await Order.findByPk(id)
+    if(!order){
+      throw new ErrorRes(404,'Đơn hàng không tồn tại')
+    }
+    if(order.status == 'completed'){
+      throw new ErrorRes(400,'Đơn hàng đã được hoàn thành,không thể hủy')
+    }
+    if(order.status == 'cancelled'){
+      throw new ErrorRes(400,'Đơn hàng đã bị hủy,không thể hủy lại')
+    }
+    const orderItem = await OrderItem.findAll({
+      where: {order_id: id}
+    })
+    for (let i = 0; i < orderItem.length; i++) {
+      const orderItemData = orderItem[i]
+      const item = await Item.findByPk(orderItemData.item_id)
+      item.stock_quantity += orderItemData.quantity
+      await item.save()
+    }
+    order.status = 'cancelled'
+    await order.save()
+    return {
+      status : 'success',
+      message: 'Hủy đơn hàng thành công',
+    }
+  } catch (error) {
+    throw(error)
+  }
+}
 
 module.exports = {
   createOrder,
   getOrderById,
   updateOrder,
-  deleteOrder
+  deleteOrder,
+  cancelOrder
 };
