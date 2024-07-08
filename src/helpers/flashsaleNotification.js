@@ -61,7 +61,7 @@ const checkFlashSale = async() => {
 }
 
 const runJob = () => {
-    cron.schedule('*/10 * * * *', checkFlashSale); // Chạy mỗi 10 giây
+    cron.schedule('* * * * *', checkFlashSale); // Chạy mỗi 10 giây
     console.log('Flash sale notification job started');
 }
 module.exports = {

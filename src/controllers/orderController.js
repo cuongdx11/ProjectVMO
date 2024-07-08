@@ -52,10 +52,21 @@ const cancelledOrder = async(req,res,next) => {
         next(error)
     }
 }
+const payOrder = async(req,res,next) => {
+    try {
+        const {orderId} = req.query
+        const id = orderId
+        const payOrder = await orderService.payOrder(id)
+        res.status(200).json(payOrder)
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     createOrder,
     getOrderById,
     updateOrder,
     deleteOrder,
-    cancelledOrder
+    cancelledOrder,
+    payOrder
 }

@@ -3,12 +3,16 @@ const orderController = require('../controllers/orderController')
 const authMiddleware = require('../middlewares/authMiddleware')
 const createPayUrl = require('../helpers/createPaymentUrl')
 
+//User
 router.use(authMiddleware.authenticateToken)
 router.post('/',orderController.createOrder)
+router.get('/payment',orderController.payOrder)
 router.get('/:id/cancel',orderController.cancelledOrder)
 router.get('/:id',orderController.getOrderById)
+router.post('/create-payment-url',createPayUrl.createPaymentUrlOrder)
+
+//Admin
 router.put('/:id',orderController.updateOrder)
 router.delete('/:id',orderController.deleteOrder)
-router.post('/create-payment-url',createPayUrl.createPaymentUrlOrder)
 
 module.exports = router

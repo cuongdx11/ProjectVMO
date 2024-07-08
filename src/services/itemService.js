@@ -87,6 +87,7 @@ const createItem = async(itemData) =>{
             data : newItem
         }
     } catch (error) {
+        await transaction.rollback();
         if(itemData.thumbnail){
             cloudinary.uploader.destroy(itemData.thumbnail)
         }

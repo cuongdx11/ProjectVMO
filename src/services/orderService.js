@@ -37,7 +37,7 @@ const createOrder = async (user_id, items, voucher_code) => {
         where: { item_id: item.item_id }
         
       },{ transaction: t })
-      let priceSale = item.selling_price
+      let priceSale = dbitem.selling_price
       if (flashSaleItem) {
           const now = new Date()
           const flashSale = await FlashSale.findByPk(flashSaleItem.flash_sale_id,{ transaction: t }) 
@@ -45,12 +45,13 @@ const createOrder = async (user_id, items, voucher_code) => {
               priceSale = flashSaleItem.flash_sale_price;
           }
       }
-      dbitem.selling_price = priceSale
+
+      
       if(dbitem.stock_quantity < item.quantity){
         await t.rollback();
         throw new ErrorRes(400,'Sản phẩm không đủ số lượng')
       }
-      total_amount += dbitem.selling_price * item.quantity;
+      total_amount += priceSale * item.quantity;
 
       // Trừ số lượng tồn kho
       await dbitem.update(
@@ -92,7 +93,8 @@ const createOrder = async (user_id, items, voucher_code) => {
         where: { item_id: item.item_id }
         
       },{ transaction: t })
-      let priceSale = item.selling_price
+      const itemdb = await Item.findByPk(item.item_id)
+      let priceSale = itemdb.selling_price
       if (flashSaleItem) {
           const now = new Date()
           const flashSale = await FlashSale.findByPk(flashSaleItem.flash_sale_id,{ transaction: t }) 
@@ -205,11 +207,28 @@ const cancelOrder = async(id) => {
     throw(error)
   }
 }
+const payOrder = async(id) => {
+  try {
+    const order = await Order.findByPk(id)
+    if(!order){
+      throw new ErrorRes(404,'Đơn hàng không tồn tại')
+    }
+    order.payment_status = 'paid'
+    await order.save()
+    return {
+      status : 'success',
+      message: 'Thanh toán đơn hàng thành công'
+    }
+  } catch (error) {
+    throw error
+  }
+}
 
 module.exports = {
   createOrder,
   getOrderById,
   updateOrder,
   deleteOrder,
-  cancelOrder
+  cancelOrder,
+  payOrder
 };
