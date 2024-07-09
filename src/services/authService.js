@@ -64,10 +64,8 @@ const login = async (email, password) => {
         return {
             status : "success",
             message: "Đăng nhập thành công",
-            token : {
-                accessToken,
-                refreshToken
-            }
+            accessToken,
+            refreshToken
         }
     } catch (error) {
         throw error;
