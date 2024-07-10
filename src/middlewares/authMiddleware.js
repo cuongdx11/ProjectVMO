@@ -1,4 +1,7 @@
 const jwt = require('jsonwebtoken');
+const User =require('../models/userModel')
+const Role = require('../models/roleModel')
+const Permission = require('../models/permissionModel')
 require('dotenv').config();
 const authenticateToken = (req, res, next) => {
     try {
@@ -22,6 +25,43 @@ const authenticateToken = (req, res, next) => {
     }
 };
 
+const checkPermission = (requiredPermission) => {
+    return async(req,res,next) => {
+        try {
+            const userReq = req.user
+            if(!userReq){
+                return res.status(401).json({error: 'Unauthorized user!'})
+            }
+            const user = await User.findByPk(userReq.userId,{
+                include: [{
+                    model: Role,
+                    include: [{
+                        model: Permission,
+                        where: {
+                            name : requiredPermission
+                        },
+                        required: false
+                    }]
+                }]
+            })
+            if(!user){
+                return res.status(404).json({error: 'Unauthorized user!'})
+            }
+            const hasPermission = user.Roles.some(role => 
+                role.Permissions.some(permission => permission.name === requiredPermission)
+            )
+            if (!hasPermission) {
+                return res.status(403).json({ error: 'Insufficient permissions' });
+            }
+            req.user = user
+            next()
+        } catch (error) {
+            next(error)
+        }
+    }
+}
+    
 module.exports = {
-    authenticateToken
+    authenticateToken,
+    checkPermission
 }

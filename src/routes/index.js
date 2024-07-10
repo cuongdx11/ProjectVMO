@@ -7,6 +7,8 @@ const flashSale = require('./flashsaleRoutes')
 const voucher = require('./voucherRoutes')
 const review = require('./reviewRoutes')
 const cart = require('./cartRoutes')
+const role = require('./roleRoutes')
+const permission = require('./permissionRoutes')
 const errorHandling = require('../middlewares/errorHandlingMiddleware')
 const intRoutes = (app) =>{
 
@@ -19,6 +21,8 @@ const intRoutes = (app) =>{
     app.use('/api/v1/vouchers',voucher)
     app.use('/api/v1/reviews',review)
     app.use('/api/v1/carts',cart)
+    app.use('/api/v1/roles',role)
+    app.use('/api/v1/permissions',permission)
     app.use(errorHandling)
 
     

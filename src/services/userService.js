@@ -2,7 +2,7 @@ const User = require('../models/userModel')
 const ErrorRes = require('../helpers/ErrorRes')
 const Order = require('../models/orderModel')
 const jwt = require('jsonwebtoken');
-
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const getAllUser = async({page = 1,order=null,filter=null,orderBy='asc',limit=process.env.LIMIT,name = null,...query}) => {
@@ -57,6 +57,9 @@ const getUserById = async(id) => {
 }
 const createUser = async(user) => {
     try {
+        const{password} = user
+        const hashedPassword = await bcrypt.hash(password, parseInt(process.env.SALT,10));
+        user.password = hashedPassword
         const newUser = await User.create(user);
         return {
             status : 'success',
