@@ -11,7 +11,7 @@ const ItemImage = sequelize.define('ItemImage', {
     item_id: {
         type: DataTypes.INTEGER,
         references: {
-            model: Item,
+            model: 'Items',
             key: 'id'
         }
     },
@@ -29,6 +29,9 @@ const ItemImage = sequelize.define('ItemImage', {
 });
 
 // Thiết lập quan hệ giữa ItemImage và Item
-ItemImage.belongsTo(Item, { foreignKey: 'item_id' });
+ItemImage.associate = function() {
+    ItemImage.belongsTo(Item, { foreignKey: 'item_id' });
+};
+
 
 module.exports = ItemImage;

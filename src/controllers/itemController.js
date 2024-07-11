@@ -80,6 +80,15 @@ const deleteItem = async(req,res,next) => {
     }
 }
 
+const createItemsFromExcel = async(req,res,next) => {
+    try {
+        const fileBuffer = req.file.buffer; // Lấy dữ liệu của file từ buffer - Luu tam thoi du lieu vào RAM 
+        await itemService.createItemsFromExcel(fileBuffer); // Truyền dữ liệu buffer cho service xử lý
+        return res.status(200).json({message: 'Tạo các sản phẩm thành công'})
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     listItem,
     listItemById,
@@ -87,5 +96,6 @@ module.exports = {
     createItem,
     updateItem,
     deleteItem,
+    createItemsFromExcel
     
 }
