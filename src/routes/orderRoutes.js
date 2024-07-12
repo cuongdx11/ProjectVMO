@@ -10,7 +10,7 @@ router.get('/payment',orderController.payOrder)
 router.get('/:id/cancel',orderController.cancelledOrder)
 router.get('/:id',orderController.getOrderById)
 router.post('/create-payment-url',createPayUrl.createPaymentUrlOrder)
-
+router.post('/apply-voucher',orderController.applyVoucher)
 //Admin
 router.put('/:id',orderController.updateOrder)
 router.delete('/:id',orderController.deleteOrder)

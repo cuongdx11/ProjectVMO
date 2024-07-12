@@ -1,7 +1,8 @@
 const { DataTypes } = require('sequelize')
 const {sequelize} = require('../config/dbConfig');
 const Role = require('./roleModel');
-const UserRole = require('./userRoleModel')
+const UserRole = require('./userRoleModel');
+const Address = require('./addressModel');
 const User = sequelize.define('User', {
     id: {
         type: DataTypes.INTEGER,
@@ -21,6 +22,18 @@ const User = sequelize.define('User', {
     password: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    phone: {
+        type: DataTypes.STRING(20),
+        allowNull: true
+    },
+    avatar: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    full_name: {
+        type: DataTypes.STRING(100),
+        allowNull: true
     },
     is_verified: {
         type: DataTypes.BOOLEAN,
@@ -56,5 +69,6 @@ const User = sequelize.define('User', {
 });
 User.belongsToMany(Role, { through: UserRole, foreignKey: 'user_id' });
 Role.belongsToMany(User, { through: UserRole, foreignKey: 'role_id' });
+User.hasMany(Address,{as : 'address',foreignKey : 'user_id'})  
 
 module.exports = User;

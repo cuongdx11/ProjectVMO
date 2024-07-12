@@ -62,11 +62,21 @@ const payOrder = async(req,res,next) => {
         next(error)
     }
 }
+const applyVoucher = async(req,res,next) => {
+    try {
+        const orderData = req.body
+        const voucher = await orderService.applyVoucher(orderData)
+        res.status(200).json(voucher)
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     createOrder,
     getOrderById,
     updateOrder,
     deleteOrder,
     cancelledOrder,
-    payOrder
+    payOrder,
+    applyVoucher
 }

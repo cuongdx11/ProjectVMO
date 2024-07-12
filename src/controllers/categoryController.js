@@ -2,7 +2,7 @@ const category = require('../models/categoryModel')
 const categoryService = require('../services/categoryService')
 const getCategories = async(req,res,next) => {
     try {
-        const categories = await categoryService.getCatgories(req.query)
+        const categories = await categoryService.getCategories(req.query)
         res.status(200).json(categories);
     } catch (error) {
         next(error)

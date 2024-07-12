@@ -223,12 +223,49 @@ const payOrder = async(id) => {
     throw error
   }
 }
+const applyVoucher = async(orderData) =>{
+  try {
+    const {total_amount,voucher_code} = orderData
+    const voucher = await Voucher.findOne({
+      where: {code: voucher_code}
+    })
+    if(!voucher){
+      throw new ErrorRes(404,'Mã giảm giá không tồn tại')
+    }
+    if(voucher.end_date < new Date()){
+      throw new ErrorRes(400,'Mã giảm giá đã hết hạn')
+    }
+    if(voucher.remaining_quantity <= 0){
+      throw new ErrorRes(400,'Mã giảm giá đã hết số lượng')
+    }
+    voucher.remaining_quantity -= 1
+    await voucher.save()
+    let discountAmount
+    if(voucher.discount_type == 'fixed'){
+      discountAmount = voucher.discount_amount
+    }
+    if(voucher.discount_type == 'percentage'){
+      discountAmount = (total_amount * (voucher.discount / 100));
+    }
+    const finalTotal = total_amount - discountAmount;
 
+    return {
+      status : 'success',
+      message: 'Áp dụng mã giảm giá thành công',
+      voucher: voucher,
+      finalTotal: finalTotal,
+      discountAmount: discountAmount
+    }
+  } catch (error) {
+    throw error
+  }
+}
 module.exports = {
   createOrder,
   getOrderById,
   updateOrder,
   deleteOrder,
   cancelOrder,
-  payOrder
+  payOrder,
+  applyVoucher
 };

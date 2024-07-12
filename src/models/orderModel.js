@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/dbConfig'); // Cập nhật đường dẫn cho đúng
-const User = require('./userModel'); // Import model User để thiết lập quan hệ
-const Voucher = require('./voucherModel'); // Import model Voucher để thiết lập quan hệ
+const { sequelize } = require('../config/dbConfig'); 
+const User = require('./userModel'); 
+const Voucher = require('./voucherModel'); 
 
 const Order = sequelize.define('Order', {
     id: {
@@ -27,6 +27,10 @@ const Order = sequelize.define('Order', {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
+    order_date: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
+    },
     status: {
         type: DataTypes.ENUM('pending', 'completed', 'cancelled'),
         defaultValue: 'pending'
@@ -34,6 +38,10 @@ const Order = sequelize.define('Order', {
     payment_status: {
         type: DataTypes.ENUM('unpaid', 'paid', 'refunded'),
         defaultValue: 'unpaid'
+    },
+    notes: {
+        type: DataTypes.TEXT,
+        allowNull: true
     },
     created_at: {
         type: DataTypes.DATE,

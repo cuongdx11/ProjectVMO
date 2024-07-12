@@ -35,10 +35,13 @@ const checkFlashSale = async() => {
     try {
         const now = new Date()
         const nowUTC = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        const fifteenMinutesLater = new Date(nowUTC.getTime() + 15 * 60 * 1000);
         const notificationsFlashSale = await Notification.findAll({
             where:{
                 scheduled_time : {
-                    [Op.lte] : nowUTC
+                    // [Op.gte] : nowUTC,
+                    // [Op.lt]: fifteenMinutesLater,
+                    [Op.between] : [nowUTC,fifteenMinutesLater]
                 },
                 is_sent : false
             },
