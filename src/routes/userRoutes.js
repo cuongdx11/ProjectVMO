@@ -9,7 +9,6 @@ router.use(authenticateToken.authenticateToken)
 //User
 router.get('/my-orders', user.getOrdersForUser)
 router.post('/change-password',user.changePass)
-router.post('/address',user.createAddress)
 
 //Admin
 router.get('/' ,[adminMiddleware.isAdmin],user.getUsers)

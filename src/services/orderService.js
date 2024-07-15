@@ -7,7 +7,15 @@ const { sequelize } = require('../config/dbConfig');
 const { Op } = require('sequelize');
 const ErrorRes = require('../helpers/ErrorRes')
 const FlashSaleItem = require('../models/flashsaleitemModel')
-const FlashSale = require('../models/flashsaleModel')
+const FlashSale = require('../models/flashsaleModel');
+const ShippingAddress = require("../models/shippingAddressModel");
+const Shipment = require('../models/shipmentModel')
+const Payment = require('../models/paymentModel')
+const OrderDiscount = require('../models/orderDiscountModel')
+const {validateCheckoutData} = require('../helpers/validateCheckoutData')
+const {calculateShippingCost} = require('../helpers/calculateShippingCost')
+const {createPaymentUrlOrder} = require('../helpers/createPaymentUrlOrder')
+const {sendOrderConfirmationEmail} = require('../helpers/sendOrderConfirmationEmail')
 
 const createOrder = async (user_id, items, voucher_code) => {
   const t = await sequelize.transaction();
@@ -207,14 +215,24 @@ const cancelOrder = async(id) => {
     throw(error)
   }
 }
-const payOrder = async(id) => {
+const payOrder = async(id,code,tran_code) => {
   try {
-    const order = await Order.findByPk(id)
-    if(!order){
-      throw new ErrorRes(404,'Đơn hàng không tồn tại')
+    if(code == '00'){
+      const order = await Order.findByPk(id)
+      if(!order){
+        throw new ErrorRes(404,'Đơn hàng không tồn tại')
+      }
+      order.payment_status = 'paid'
+      // order.status = 'processing'
+      await order.save()
+      const payment = await Payment.findByPk(order.payment_id)
+      if(!payment){
+        throw new ErrorRes(404,'Thanh toán không tồn tại')
+      }
+      payment.transaction_id = tran_code
+      await payment.save()
     }
-    order.payment_status = 'paid'
-    await order.save()
+   
     return {
       status : 'success',
       message: 'Thanh toán đơn hàng thành công'
@@ -260,6 +278,164 @@ const applyVoucher = async(orderData) =>{
     throw error
   }
 }
+const calculateSubtotalAndUpdateStock =async(items,transaction) => {
+  let subtotal = 0;
+  const updatedItems = [];
+  await Promise.all(items.map(async(item)=>{
+    const [dbItem,flashSaleItem] = await Promise.all([
+      Item.findByPk(item.item_id,{transaction}),
+      FlashSaleItem.findOne({where:{item_id:item.item_id},transaction})
+    ])
+    if(!dbItem){
+      throw new ErrorRes(404,'Sản phẩm không tồn tại')
+    }
+    if (dbItem.stock_quantity < item.quantity) {
+      throw new ErrorRes(400, 'Sản phẩm không đủ số lượng');
+    }
+    const priceSale = await getFlashSalePrice(flashSaleItem,dbItem.selling_price,transaction)
+    subtotal += priceSale * item.quantity;
+    
+    await dbItem.update({ stock_quantity: dbItem.stock_quantity - item.quantity }, { transaction });
+    updatedItems.push({ ...item, price: priceSale });
+    
+  }))
+  return [subtotal, updatedItems];
+}
+const getFlashSalePrice = async(flashSaleItem,regularPrice,transaction) => {
+  if(!flashSaleItem) return regularPrice;
+  const now = new Date();
+  const flashSale = await FlashSale.findByPk(flashSaleItem.flash_sale_id, { transaction });
+  if (flashSale && now >= flashSale.start_time && now <= flashSale.end_time) {
+    return flashSaleItem.flash_sale_price;
+  }
+  return regularPrice;
+}
+
+const applyDiscount = async (voucherCode, subtotal, transaction) => {
+  if (!voucherCode) return 0;
+
+  const voucher = await Voucher.findOne({ where: { code: voucherCode }, transaction });
+  if (!voucher) {
+    throw new ErrorRes(400, 'Mã giảm giá không tồn tại');
+  }
+  if (voucher.remaining_quantity <= 0) {
+    throw new ErrorRes(400, 'Mã giảm giá đã hết');
+  }
+  if (voucher.expired_date < new Date()) {
+    throw new ErrorRes(400, 'Mã giảm giá đã hết hạn');
+  }
+
+  const discount = voucher.discount_type === 'percentage'
+    ? subtotal * voucher.discount_amount / 100
+    : +voucher.discount_amount;
+
+  await voucher.update({ remaining_quantity: voucher.remaining_quantity - 1 }, { transaction });
+
+  return discount;
+};
+
+const createPayment = async (paymentMethodId, amount, transaction) => {
+  return Payment.create({
+    payment_method_id: paymentMethodId,
+    amount,
+    currency: 'VND',
+    status: 'pending',
+  }, { transaction });
+};
+const createShippingAddress = async (orderData, transaction) => {
+  return ShippingAddress.create({
+    receiver_name: orderData.full_name,
+    phone_number: orderData.phone_number,
+    address_line1: orderData.address,
+    city: orderData.city,
+    state: orderData.state,
+    country: 'Viet Nam',
+  }, { transaction });
+};
+const createShipment = async (shippingMethodId, shippingCost, transaction) => {
+  return Shipment.create({
+    shipping_method_id: shippingMethodId,
+    shipping_cost: shippingCost,
+    status: 'pending',
+  }, { transaction });
+};
+
+const createOrderCheckOut = async (userId, shippingAddressId, paymentId, shipmentId, subtotal, totalAmount, discount, notes, transaction) => {
+  return Order.create({
+    user_id: userId,
+    shipping_address_id: shippingAddressId,
+    payment_id: paymentId,
+    shipment_id: shipmentId,
+    subtotal,
+    total_amount: totalAmount,
+    discount,
+    status: 'pending',
+    payment_status: 'unpaid',
+    notes,
+  }, { transaction });
+};
+
+const createOrderItems = async (orderId, items, transaction) => {
+  const orderItems = items.map(item => ({
+    order_id: orderId,
+    item_id: item.item_id,
+    quantity: item.quantity,
+    price: item.price,
+  }));
+
+  return OrderItem.bulkCreate(orderItems, { transaction });
+};
+const createOrderDiscount = async(orderId,voucher_code,transaction) => {
+  const voucher = await Voucher.findOne({
+    where: { code: voucher_code }
+  })
+  if(!voucher) {
+    throw new ErrorRes(404,'Mã khuyến mãi không tồn tại')
+
+  }
+  const orderDiscount = await OrderDiscount.create({
+    order_id : orderId,
+    voucher_id : voucher.id
+  },{ transaction })
+  return orderDiscount
+}
+
+const checkOut = async(orderData) =>{
+  const validationErrors = validateCheckoutData(orderData);
+  if (validationErrors.length > 0) {
+    throw new ErrorRes(400, validationErrors);
+  }
+
+  const transaction = await sequelize.transaction();
+  try {
+    const { items, userId, voucher_code, notes, paymentMethodId, shippingMethodId } = orderData;
+
+    const [subtotal, updatedItems] = await calculateSubtotalAndUpdateStock(items, transaction);
+    const shippingAddress = await createShippingAddress(orderData, transaction);
+    const shippingCost = await calculateShippingCost(shippingAddress);
+    const discount = await applyDiscount(voucher_code, subtotal, transaction);
+
+    const totalAmount = subtotal + shippingCost - discount;
+
+    const payment = await createPayment(paymentMethodId, totalAmount, transaction);
+    const shipment = await createShipment(shippingMethodId, shippingCost, transaction);
+    const order = await createOrderCheckOut(userId, shippingAddress.id, payment.id, shipment.id, subtotal, totalAmount, discount, notes, transaction);
+
+    await createOrderItems(order.id, updatedItems, transaction);
+    await createOrderDiscount(order.id,voucher_code,transaction);
+
+    await transaction.commit();
+    if (paymentMethodId === 2) {
+      const vnpayUrl = await createPaymentUrlOrder(order.id,totalAmount,'NCB')
+      return { order, paymentUrl: vnpayUrl };
+    }
+    return order
+  } catch (error) {
+    await transaction.rollback();
+    throw new ErrorRes(error.statusCode || 500, error.message);
+  }
+}
+
 module.exports = {
   createOrder,
   getOrderById,
@@ -267,5 +443,7 @@ module.exports = {
   deleteOrder,
   cancelOrder,
   payOrder,
-  applyVoucher
+  applyVoucher,
+  checkOut
+
 };

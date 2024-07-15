@@ -1,5 +1,4 @@
 const User = require("../models/userModel");
-const Address = require("../models/addressModel");
 const ErrorRes = require("../helpers/ErrorRes");
 const Order = require("../models/orderModel");
 const jwt = require("jsonwebtoken");
@@ -169,27 +168,7 @@ const getUserOrders = async (
     throw error;
   }
 };
-const createAddress = async (token, addressData) => {
-  try {
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const userId = decoded.userId;
-    const user = await User.findByPk(userId);
-    if (!user) {
-      throw new ErrorRes(404, "Tài khoản không tồn tại");
-    }
-    const address = await Address.create({
-      ...addressData,
-      user_id: userId,
-    });
-    return {
-      status: "success",
-      message: "Thêm địa chỉ thành công",
-      address: address,
-    };
-  } catch (error) {
-    throw error;
-  }
-};
+
 module.exports = {
   getAllUser,
   getUserById,
@@ -197,5 +176,4 @@ module.exports = {
   updateUser,
   deleteUser,
   getUserOrders,
-  createAddress,
 };

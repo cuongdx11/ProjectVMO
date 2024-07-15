@@ -6,6 +6,7 @@ const createPayUrl = require('../helpers/createPaymentUrl')
 //User
 router.use(authMiddleware.authenticateToken)
 router.post('/',orderController.createOrder)
+router.post('/checkout',orderController.checkOut)
 router.get('/payment',orderController.payOrder)
 router.get('/:id/cancel',orderController.cancelledOrder)
 router.get('/:id',orderController.getOrderById)

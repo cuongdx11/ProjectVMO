@@ -3,10 +3,10 @@ const authService = require('../services/authService');
 
 // Đăng ký người dùng
 const register = async (req, res,next) => {
-    const { username, email, password } = req.body;
+    const { username, email, password,is_notification } = req.body;
 
     try {
-        const newUser = await authService.register(username, email, password);
+        const newUser = await authService.register(username, email, password,is_notification);
         res.status(200).json(newUser);
     } catch (error) {
         next(error)

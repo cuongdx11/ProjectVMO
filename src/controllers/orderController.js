@@ -54,9 +54,8 @@ const cancelledOrder = async(req,res,next) => {
 }
 const payOrder = async(req,res,next) => {
     try {
-        const {orderId} = req.query
-        const id = orderId
-        const payOrder = await orderService.payOrder(id)
+        const {vnp_ResponseCode,vnp_TxnRef,vnp_TransactionNo} = req.query
+        const payOrder = await orderService.payOrder(vnp_TxnRef,vnp_ResponseCode,vnp_TransactionNo)
         res.status(200).json(payOrder)
     } catch (error) {
         next(error)
@@ -71,6 +70,15 @@ const applyVoucher = async(req,res,next) => {
         next(error)
     }
 }
+const checkOut = async(req,res,next) => {
+    try {
+        const orderData = req.body
+        const checkOut = await orderService.checkOut(orderData)
+        res.status(200).json(checkOut)
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     createOrder,
     getOrderById,
@@ -78,5 +86,6 @@ module.exports = {
     deleteOrder,
     cancelledOrder,
     payOrder,
-    applyVoucher
+    applyVoucher,
+    checkOut
 }

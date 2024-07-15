@@ -16,7 +16,11 @@ const transporter = nodemailer.createTransport({
 
 const sendMailFlashSale = async(flashSale) => {
     try {
-        const users = await User.findAll();
+        const users = await User.findAll({
+            where : {
+                is_notification : 1
+            }
+        });
         const userEmails = users.map(user => user.email)
         const mailOptions = {
             from: process.env.EMAIL_USER,

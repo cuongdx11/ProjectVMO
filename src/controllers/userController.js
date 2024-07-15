@@ -73,17 +73,7 @@ const getOrdersForUser = async (req, res, next) => {
         next(error);
     }
 }
-const createAddress = async(req,res,next) => {
-    try {
-        const addressData = req.body
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1]; // L
-        const address = await userService.createAddress(token,addressData)
-        res.status(200).json(address);
-    } catch (error) {
-        next(error)
-    }
-}
+
 module.exports = {
     getUsers,
     changePass,
@@ -92,7 +82,6 @@ module.exports = {
     updateUser,
     deleteUser,
     getOrdersForUser,
-    createAddress
     
     
 }

@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const ErrorRes = require('../helpers/ErrorRes')
 const { Op } = require('sequelize');
 require('dotenv').config()
-const register = async (username, email, password) => {
+const register = async (username, email, password,is_notification) => {
     try {
         // Hash mật khẩu trước khi lưu vào cơ sở dữ liệu
         const hashedPassword = await bcrypt.hash(password, process.env.SLAT);
@@ -15,7 +15,8 @@ const register = async (username, email, password) => {
         const newUser = await User.create({
             username,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            is_notification
         });
         const verificationToken = jwt.sign({ userId: newUser.id, email: newUser.email }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '1h' // Thời gian hết hạn của token
