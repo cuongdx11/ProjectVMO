@@ -10,18 +10,18 @@ const getAllUser = async ({
   sortBy = null,
   filter = null,
   order = null,
-  limit = null,
+  pageSize = null,
   search = null,
   ...query
 }) => {
   try {
     const offset = page <= 1 ? 0 : page - 1;
-    const flimit = +limit || +process.env.LIMIT || 10;
+    const limit = +pageSize || +process.env.LIMIT || 10;
     const queries = { 
         raw: false, 
         nest: true ,
-        limit :  flimit,
-        offset : offset * flimit,
+        limit :  limit,
+        offset : offset * limit,
     };
     let sequelizeOrder = [];
     if (sortBy && order) {
@@ -43,20 +43,13 @@ const getAllUser = async ({
       where,
       ...queries,
       attributes: { exclude: ["password"] },
-      include : [
-        {
-            model : Address,
-            as : "address",
-            attributes :    ['address_line1','address_line2','city','country','type_address','is_default'] 
-        }
-      ]
       
     });
     return {
       users: rows,
       total: count,
-      totalPages: Math.ceil(count / flimit),
-      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      currentPage: +page,
     };
   } catch (error) {
     throw error;

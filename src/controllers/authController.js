@@ -47,10 +47,9 @@ const verifyEmail = async (req, res ,next) => {
 
 const refreshToken = async(req,res,next) =>{
     try {
-        const {token} = req.headers;
-        const refreshToken = token
-        const resp = await authService.refreshToken(refreshToken)
-        res.status(200).json({ resp });
+        const {refresh_token} = req.headers;
+        const resp = await authService.refreshToken(refresh_token)
+        res.status(200).json(resp);
     } catch (error) {
         next(error)
     }

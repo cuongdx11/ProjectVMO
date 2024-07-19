@@ -5,6 +5,8 @@ const Voucher = require('./voucherModel');
 const ShippingAddress = require('./shippingAddressModel');
 const Payment = require('./paymentModel');
 const Shipment = require('./shipmentModel');
+const OrderItem = require('./orderitemModel');
+const Item = require('./itemModel')
 const Order = sequelize.define('Order', {
     id: {
         type: DataTypes.INTEGER,
@@ -84,9 +86,14 @@ const Order = sequelize.define('Order', {
 });
 
 // Thiết lập quan hệ giữa Order và User, Voucher
-Order.belongsTo(User, { foreignKey: 'user_id' });
+Order.belongsTo(User, { as: 'user' ,foreignKey: 'user_id' });
 // Order.belongsTo(Voucher, { foreignKey: 'voucher_id' });
-Order.belongsTo(ShippingAddress, { foreignKey: 'shipping_address_id' });
-Order.belongsTo(Payment, { foreignKey: 'payment_id' });
+Order.belongsTo(ShippingAddress, {as:'address_ship', foreignKey: 'shipping_address_id' });
+Order.belongsTo(Payment, {as:'payment', foreignKey: 'payment_id' });
+Order.hasMany(OrderItem,{as: 'order_items',foreignKey: 'order_id'})
+
+// Thiết lập quan hệ giữa OrderItem và Order, Item
+OrderItem.belongsTo(Order, { foreignKey: 'order_id' });
+OrderItem.belongsTo(Item, { as:'item',foreignKey: 'item_id' });
 
 module.exports = Order;

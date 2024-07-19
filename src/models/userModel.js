@@ -42,6 +42,10 @@ const User = sequelize.define('User', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    is_notification: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     reset_password_token: {
         type: DataTypes.STRING,
         allowNull: true

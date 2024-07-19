@@ -9,14 +9,13 @@ require('dotenv').config()
 const register = async (username, email, password,is_notification) => {
     try {
         // Hash mật khẩu trước khi lưu vào cơ sở dữ liệu
-        const hashedPassword = await bcrypt.hash(password, process.env.SLAT);
-
+        const hashedPassword = await bcrypt.hash(password, parseInt(process.env.SALT, 10));
         // Tạo người dùng mới
         const newUser = await User.create({
             username,
             email,
             password: hashedPassword,
-            is_notification
+            is_notification 
         });
         const verificationToken = jwt.sign({ userId: newUser.id, email: newUser.email }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '1h' // Thời gian hết hạn của token
@@ -54,7 +53,7 @@ const login = async (email, password) => {
 
         // Tạo accesstoken JWT
         const accessToken = jwt.sign({ userId: user.id, email: user.email,is_admin : user.is_admin  }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '500s' // Thời gian hết hạn của token
+            expiresIn: '600s' // Thời gian hết hạn của token
         });
         // Tạo refreshtoken JWT
         const refreshToken = jwt.sign({ userId: user.id, email: user.email,is_admin : user.is_admin  }, process.env.REFRESH_TOKEN_SECRET, {

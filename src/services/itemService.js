@@ -10,6 +10,8 @@ const readExcel = require('../helpers/readExcel')
 const uploadImage = require('../helpers/uploadImages')
 const ErrorRes = require("../helpers/ErrorRes");
 require("dotenv").config();
+const redis = require('../config/redisConfig');
+const { Json } = require("sequelize/lib/utils");
 const getAllItems = async () => {
   try {
     const items = await Item.findAll();
@@ -26,18 +28,25 @@ const getPageItem = async ({
   sortBy = null,
   filter = null,
   order = null,
-  limit = null,
+  pageSize = null,
   search = null,
   ...query
 }) => {
   try {
+    const getAllItem = await redis.get('get-list-item')
+    if(getAllItem) {
+      return {
+        status: 'success',
+        data: JSON.parse(getAllItem)
+      }
+    }
     const offset = page <= 1 ? 0 : page - 1;
-    const flimit = +limit || +process.env.LIMIT || 10;
+    const limit = +pageSize || +process.env.LIMIT || 10;
     const queries = { 
         raw: false, 
         nest: true,
-        limit :  flimit,
-        offset : offset * flimit,
+        limit :  limit,
+        offset : offset * limit,
     }; // không lấy instance, lấy data từ bảng khác
 
     let sequelizeOrder = [];
@@ -77,12 +86,18 @@ const getPageItem = async ({
         }
       ],
     });
-   
+    redis.set('get-list-item',JSON.stringify({
+      status: "success",
+      total: count,
+      items: rows,
+      totalPages: Math.ceil(count / limit),
+      currentPage: +page
+    }))
     return {
       status: "success",
       total: count,
       items: rows,
-      totalPages: Math.ceil(count / flimit),
+      totalPages: Math.ceil(count / limit),
       currentPage: +page,
     };
   } catch (error) {
@@ -92,14 +107,24 @@ const getPageItem = async ({
 
 const getItemById = async (id) => {
   try {
-    const item = await Item.findByPk(id);
-    const itemImages = await ItemImage.findAll({
-      where: { item_id: id },
-    });
+    const item = await Item.findOne({
+      where: { id },
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes : ['name']
+        },
+        {
+          model:ItemImage,
+          as: 'images',
+          attributes : ['image_url']
+        }
+      ]
+    })
     if (!item) {
       throw new ErrorRes(404, "Sản phẩm không tồn tại");
     }
-    item.setDataValue("itemImages", itemImages);
     return item;
   } catch (error) {
     throw error;

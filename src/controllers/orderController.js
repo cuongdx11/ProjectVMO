@@ -2,7 +2,14 @@ const orderService = require('../services/orderService')
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
-
+const getOrders = async(req,res,next) => {
+    try {
+        const orders = await orderService.getOrders(req.query)
+        res.status(200).json(orders)
+    } catch (error) {
+        next(error)
+    }
+}
 const createOrder = async(req,res,next) => {
     try {
         const { items, voucher_code } = req.body;
@@ -87,5 +94,6 @@ module.exports = {
     cancelledOrder,
     payOrder,
     applyVoucher,
-    checkOut
+    checkOut,
+    getOrders
 }

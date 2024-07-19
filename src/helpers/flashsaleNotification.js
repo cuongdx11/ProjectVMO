@@ -3,7 +3,7 @@ const {Op} = require('sequelize')
 const FlashSale = require('../models/flashsaleModel')
 const nodemailer = require('nodemailer')
 const moment = require('moment');
-const Notification = require('../models/notificationModel')
+const NotificationFlashSale = require('../models/notificationFlashSaleModel')
 const User = require('../models/userModel')
 require('dotenv').config();
 const transporter = nodemailer.createTransport({
@@ -40,10 +40,10 @@ const checkFlashSale = async() => {
         const now = new Date()
         const nowUTC = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
         const fifteenMinutesLater = new Date(nowUTC.getTime() + 15 * 60 * 1000);
-        const notificationsFlashSale = await Notification.findAll({
+        const notificationsFlashSale = await NotificationFlashSale.findAll({
             where:{
                 scheduled_time : {
-                    // [Op.gte] : nowUTC,
+                    // [Op.lte] : nowUTC,
                     // [Op.lt]: fifteenMinutesLater,
                     [Op.between] : [nowUTC,fifteenMinutesLater]
                 },
@@ -72,5 +72,8 @@ const runJob = () => {
     console.log('Flash sale notification job started');
 }
 module.exports = {
-    runJob
+    runJob,
+    checkFlashSale,
+    sendMailFlashSale
+
 }

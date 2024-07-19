@@ -7,6 +7,14 @@ const Category = sequelize.define('Category', {
         autoIncrement: true,
         primaryKey: true
     },
+    parent_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'Categories',
+            key: 'id'
+        }
+    },
     name: {
         type: DataTypes.STRING(100),
         allowNull: false
@@ -34,5 +42,8 @@ const Category = sequelize.define('Category', {
     timestamps: false,
     tableName: 'Categories'
 });
+
+Category.belongsTo(Category, { as: 'parent', foreignKey: 'parent_id' });
+Category.hasMany(Category, { as: 'children', foreignKey: 'parent_id' });
 
 module.exports = Category;

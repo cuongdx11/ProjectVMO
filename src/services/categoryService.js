@@ -1,5 +1,6 @@
 const ErrorRes = require("../helpers/ErrorRes");
 const Category = require("../models/categoryModel");
+const { Op } = require("sequelize");
 
 const createCategory = async (categoryData) => {
   try {
@@ -72,23 +73,23 @@ const getCategories = async ({
   sortBy = null,
   filter = null,
   order = null,
-  limit = null,
+  pageSize = null,
   search = null,
   ...query
 }) => {
   try {
     const offset = page <= 1 ? 0 : page - 1;
-    const flimit = +limit || +process.env.LIMIT || 10;
+    const limit = +pageSize || +process.env.LIMIT || 10;
     const queries = { 
       raw: true, 
       nest: true,
-      limit :  flimit,
-      offset : offset * flimit,
+      limit :  limit,
+      offset : offset * limit,
     };
   
     let sequelizeOrder = [];
     if (sortBy && order) {
-      const orderDirection = order.toUpperCase();
+      const orderDirection = order.toUpperCase() || 'asc'
       sequelizeOrder.push([sortBy, orderDirection]);
       queries.order = sequelizeOrder;
     }
@@ -111,7 +112,7 @@ const getCategories = async ({
       status: "success",
       items: rows,
       total: count,
-      totalPages: Math.ceil(count / flimit),
+      totalPages: Math.ceil(count / limit),
       currentPage: page,
     };
   } catch (error) {

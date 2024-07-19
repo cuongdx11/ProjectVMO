@@ -13,6 +13,7 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
+    "bull": "^4.15.1",
     "cloudinary": "^2.2.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -28,6 +29,7 @@
     "nodemailer": "^6.9.14",
     "qs": "^6.12.2",
     "querystring": "^0.2.1",
+    "redis": "^4.6.15",
     "sequelize": "^6.37.3",
     "swagger-ui-express": "^5.0.1",
     "xlsx": "^0.18.5",

@@ -30,7 +30,7 @@ const ItemImage = sequelize.define('ItemImage', {
 
 // Thiết lập quan hệ giữa ItemImage và Item
 ItemImage.associate = function() {
-    ItemImage.belongsTo(Item, { foreignKey: 'item_id' });
+    ItemImage.belongsTo(Item, {as:'images', foreignKey: 'item_id' });
 };
 
 

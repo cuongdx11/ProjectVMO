@@ -1,5 +1,4 @@
-// middleware/cartTransferMiddleware.js
-const  Cart  = require('../models/cartModel'); // Giả sử bạn đang sử dụng Sequelize và đã định nghĩa model Cart
+const  Cart  = require('../models/cartModel'); 
 
 const cartTransferMiddleware = async (req, res, next) => {
     if (!req.user || !req.sessionID) {

@@ -16,18 +16,18 @@ const ShippingAddress = sequelize.define('ShippingAddress', {
         type: DataTypes.STRING(20),
         allowNull: false
     },
-    address_line1: {
+    address_detail: {
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    address_line2: {
+    ward: {
         type: DataTypes.STRING(255)
     },
-    city: {
+    district: {
         type: DataTypes.STRING(100),
         allowNull: false
     },
-    state: {
+    province: {
         type: DataTypes.STRING(100),
         allowNull: false
     },

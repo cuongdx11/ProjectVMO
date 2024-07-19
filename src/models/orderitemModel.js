@@ -12,14 +12,14 @@ const OrderItem = sequelize.define('OrderItem', {
     order_id: {
         type: DataTypes.INTEGER,
         references: {
-            model: Order,
+            model: 'Orders',
             key: 'id'
         }
     },
     item_id: {
         type: DataTypes.INTEGER,
         references: {
-            model: Item,
+            model: 'Items',
             key: 'id'
         }
     },
@@ -40,8 +40,6 @@ const OrderItem = sequelize.define('OrderItem', {
     tableName: 'OrderItems'
 });
 
-// Thiết lập quan hệ giữa OrderItem và Order, Item
-OrderItem.belongsTo(Order, { foreignKey: 'order_id' });
-OrderItem.belongsTo(Item, { foreignKey: 'item_id' });
+
 
 module.exports = OrderItem;

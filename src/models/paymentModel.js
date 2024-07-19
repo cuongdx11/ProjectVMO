@@ -46,5 +46,5 @@ const Payment = sequelize.define('Payment', {
     timestamps: false,
     tableName: 'Payments'
 });
-Payment.belongsTo(PaymentMethod, { foreignKey: 'payment_method_id' });
+Payment.belongsTo(PaymentMethod, {as:'payment_method', foreignKey: 'payment_method_id' });
 module.exports = Payment;

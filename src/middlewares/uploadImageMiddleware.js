@@ -26,18 +26,30 @@ const storageCategory = new CloudinaryStorage({
   }
 });
 
+const storageAvatar = new CloudinaryStorage({
+  cloudinary,
+  allowedFormats: ['jpg', 'png'],
+  params : {
+    folder: 'vmo_avatar',
+  }
+})
+
 const uploadCloud = multer({ storage });
 
 const uploadCategoryCloud = multer({storage:  storageCategory });
+
+const uploadAvatarCloud = multer({storage : storageAvatar})
 
 const uploadImageItem = uploadCloud.fields([
   { name: 'thumbnail', maxCount: 1 },
   { name: 'images', maxCount: 10 }
 ]);
 const uploadImageCategory = uploadCategoryCloud.single('banner_image')
+const uploadImageAvatar = uploadAvatarCloud.single('avatar')
 
 module.exports = {
   uploadImageItem,
-  uploadImageCategory
+  uploadImageCategory,
+  uploadImageAvatar
 };
 

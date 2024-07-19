@@ -1,22 +1,44 @@
 const { sequelize } = require('../config/dbConfig')
 const FlashSale = require('../models/flashsaleModel')
 const FlashSaleItem = require('../models/flashsaleitemModel')
-const Notification = require('../models/notificationModel')
+const NotificationFlashSale = require('../models/notificationFlashSaleModel')
 const Item = require('../models/itemModel')
 const ErrorRes = require('../helpers/ErrorRes')
-
+const Queue = require('bull')
+const redisClient = require('../config/redisConfig')
+const flashsaleQueue = new Queue('flashsale-queue',{redis : redisClient})
 const createFlashSale = async(flashsaleData) => {
     const transaction = await sequelize.transaction()
     try {
         const newFlashSale = await FlashSale.create(flashsaleData,{transaction})
         const startTime = newFlashSale.start_time;
         const scheduledTime = new Date(new Date(startTime).getTime() - 15 * 60000);
+        const endTime = newFlashSale.end_time;
         const notificationFlashSaleData = {
             flash_sale_id : newFlashSale.id,
             scheduled_time : scheduledTime
         }
-        await Notification.create(notificationFlashSaleData,{transaction})
+        await NotificationFlashSale.create(notificationFlashSaleData,{transaction})
+        
+        await flashsaleQueue.add('notify-flashsale',
+            {flashSaleId : newFlashSale.id},
+            {
+                delay: Math.max(0, scheduledTime.getTime() - new Date().getTime()) - (7 * 3600000),
+                jobId: `notify-${newFlashSale.id}`
+            }
+        )
+        
+        await flashsaleQueue.add('end-flashsale', 
+            { flashSaleId: newFlashSale.id },
+            { 
+                delay: Math.max(0, endTime.getTime() - new Date().getTime()) - (7 * 3600000),
+                jobId: `end-${newFlashSale.id}`
+            }
+        );
+       
+
         await transaction.commit();
+
         return {
             status : "success",
             message : "Tạo thành công",

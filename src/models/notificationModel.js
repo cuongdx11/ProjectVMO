@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/dbConfig'); // Cập nhật đường dẫn cho đúng
-const FlashSale = require('./flashsaleModel'); // Import model FlashSale để thiết lập quan hệ
+const { sequelize } = require('../config/dbConfig'); 
 
 const Notification = sequelize.define('Notification', {
     id: {
@@ -8,20 +7,21 @@ const Notification = sequelize.define('Notification', {
         autoIncrement: true,
         primaryKey: true
     },
-    flash_sale_id: {
-        type: DataTypes.INTEGER,
-        references: {
-            model: FlashSale,
-            key: 'id'
-        }
+    message: {
+        type: DataTypes.STRING(255),
+        allowNull: false
     },
-    is_sent: {
+    type: {
+        type: DataTypes.STRING(50),
+        allowNull: false
+    },
+    related_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    is_read: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
-    },
-    scheduled_time: {
-        type: DataTypes.DATE,
-        allowNull: false
     },
     created_at: {
         type: DataTypes.DATE,
@@ -36,7 +36,6 @@ const Notification = sequelize.define('Notification', {
     tableName: 'Notifications'
 });
 
-// Thiết lập quan hệ giữa Notification và FlashSale
-Notification.belongsTo(FlashSale, { foreignKey: 'flash_sale_id' });
+
 
 module.exports = Notification;

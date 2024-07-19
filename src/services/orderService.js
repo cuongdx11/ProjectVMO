@@ -16,7 +16,78 @@ const {validateCheckoutData} = require('../helpers/validateCheckoutData')
 const {calculateShippingCost} = require('../helpers/calculateShippingCost')
 const {createPaymentUrlOrder} = require('../helpers/createPaymentUrlOrder')
 const {sendOrderConfirmationEmail} = require('../helpers/sendOrderConfirmationEmail')
+const {createNotification} = require('../services/notificationService');
+const redisClient = require('../config/redisConfig');
+const User = require("../models/userModel");
+const Queue = require('bull');
+const PaymentMethod = require("../models/paymentMethodModel");
+const emailQueue = new Queue('email-queue', {
+  redis: redisClient
+});
 
+const getOrders = async({
+  page = 1,
+  sortBy = null,
+  filter = null,
+  order = null,
+  pageSize = null,
+  search = null,
+  ...query
+}) => {
+  try {
+    const offset = page <=1 ? 0 : page -1
+    const limit = +pageSize || +process.env.LIMIT||10
+    const queries = {
+      raw: false,
+      nest: true,
+      limit: limit,
+      offset: offset*limit
+    }
+    let sequelizeOrder = [];
+    if (sortBy && order) {
+      const orderDirection = order.toUpperCase() || 'asc'
+      sequelizeOrder.push([sortBy, orderDirection]);
+      queries.order = sequelizeOrder;
+    }
+    
+    if (search) query.name = { [Op.substring]: search };
+    
+    const where = {...query}
+
+    if (filter && typeof filter === "object") {
+      Object.entries(filter).forEach(([key,value])=>{
+        if(value !== null && value !== undefined){
+          where[key] = value
+        }
+      })
+    }
+    const {count,rows} = await Order.findAndCountAll({
+      where,
+      ...queries,
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['full_name']
+        },
+        {
+          model: Payment,
+          as: 'payment',
+          attributes: ['status']
+        }
+      ]
+    })
+    return {
+      status: 'success',
+      total: count,
+      items: rows,
+      totalPages: Math.ceil(count / limit),
+      currentPage: +page,
+    };
+  } catch (error) {
+    
+  }
+}
 const createOrder = async (user_id, items, voucher_code) => {
   const t = await sequelize.transaction();
   try {
@@ -136,10 +207,51 @@ const createOrder = async (user_id, items, voucher_code) => {
 };
 const getOrderById = async(id) => {
   try {
-    const order = await Order.findByPk(id)
-    const orderItem = await OrderItem.findAll({
-      where: {order_id: id}
+    const order = await Order.findOne({
+      where: { id: id },
+      attributes: {
+        exclude: ['created_at', 'updated_at']
+      },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['full_name','email','phone']
+        },
+        {
+          model: OrderItem,
+          as: 'order_items',
+          attributes:['quantity','price'],
+          include: [
+            {
+              model:Item,
+              as:'item',
+              attributes:['id','name','thumbnail']
+            }
+          ]
+        },
+        {
+          model: ShippingAddress,
+          as: 'address_ship',
+          attributes: ['receiver_name','phone_number','address_detail','ward','district','province','country']
+        },
+        {
+          model: Payment,
+          as: 'payment',
+          attributes: ['amount','currency','status','paid_at'],
+          include: [
+            {
+              model: PaymentMethod,
+              as: 'payment_method',
+              attributes: ['name', 'description']
+            }
+          ]
+        }
+      ],
     })
+    // const orderItem = await OrderItem.findAll({
+    //   where: {order_id: id}
+    // })
     if(!order){
       throw new ErrorRes(404,'Đơn hàng không tồn tại')
     }
@@ -147,7 +259,7 @@ const getOrderById = async(id) => {
       status : 'success',
       message: 'Lấy đơn hàng thành công',
       order: order,
-      orderItem: orderItem
+      // orderItem: orderItem
     }
   } catch (error) {
     throw error
@@ -294,9 +406,9 @@ const calculateSubtotalAndUpdateStock =async(items,transaction) => {
     }
     const priceSale = await getFlashSalePrice(flashSaleItem,dbItem.selling_price,transaction)
     subtotal += priceSale * item.quantity;
-    
+    const name = dbItem.name
     await dbItem.update({ stock_quantity: dbItem.stock_quantity - item.quantity }, { transaction });
-    updatedItems.push({ ...item, price: priceSale });
+    updatedItems.push({ ...item,name : name, price: priceSale });
     
   }))
   return [subtotal, updatedItems];
@@ -346,9 +458,10 @@ const createShippingAddress = async (orderData, transaction) => {
   return ShippingAddress.create({
     receiver_name: orderData.full_name,
     phone_number: orderData.phone_number,
-    address_line1: orderData.address,
-    city: orderData.city,
-    state: orderData.state,
+    address_detail: orderData.address,
+    ward: orderData.ward,
+    district: orderData.district,
+    province: orderData.province,
     country: 'Viet Nam',
   }, { transaction });
 };
@@ -385,7 +498,7 @@ const createOrderItems = async (orderId, items, transaction) => {
 
   return OrderItem.bulkCreate(orderItems, { transaction });
 };
-const createOrderDiscount = async(orderId,voucher_code,transaction) => {
+const createOrderDiscount = async(orderId,voucher_code,discount,transaction) => {
   const voucher = await Voucher.findOne({
     where: { code: voucher_code }
   })
@@ -395,7 +508,9 @@ const createOrderDiscount = async(orderId,voucher_code,transaction) => {
   }
   const orderDiscount = await OrderDiscount.create({
     order_id : orderId,
-    voucher_id : voucher.id
+    voucher_id : voucher.id,
+    discount_applied : discount
+
   },{ transaction })
   return orderDiscount
 }
@@ -422,13 +537,22 @@ const checkOut = async(orderData) =>{
     const order = await createOrderCheckOut(userId, shippingAddress.id, payment.id, shipment.id, subtotal, totalAmount, discount, notes, transaction);
 
     await createOrderItems(order.id, updatedItems, transaction);
-    await createOrderDiscount(order.id,voucher_code,transaction);
-
+    await createOrderDiscount(order.id,voucher_code,discount,transaction);
+    // const userBuy = await User.findByPk(userId)
+    // await createNotification(`Đơn hàng ${order.id} được mua bởi khách hàng ${userBuy.full_name}`,'NEW_ORDER')
     await transaction.commit();
+    // await sendOrderConfirmationEmail(order,updatedItems,shippingCost)
+    await emailQueue.add('order-confirmation', {
+      orderId: order.id,
+      items: updatedItems,
+      shippingCost: shippingCost
+  });
     if (paymentMethodId === 2) {
       const vnpayUrl = await createPaymentUrlOrder(order.id,totalAmount,'NCB')
       return { order, paymentUrl: vnpayUrl };
     }
+    
+    
     return order
   } catch (error) {
     await transaction.rollback();
@@ -444,6 +568,7 @@ module.exports = {
   cancelOrder,
   payOrder,
   applyVoucher,
-  checkOut
+  checkOut,
+  getOrders
 
 };
