@@ -14,11 +14,11 @@ const validateCheckoutData = (formData) => {
       errors.push('Địa chỉ không được để trống');
     }
   
-    if (!formData.city || formData.city.trim().length === 0) {
+    if (!formData.district || formData.district.trim().length === 0) {
       errors.push('Thành phố không được để trống');
     }
   
-    if (!formData.state || formData.state.trim().length === 0) {
+    if (!formData.province || formData.province.trim().length === 0) {
       errors.push('Tỉnh/Thành phố không được để trống');
     }
   

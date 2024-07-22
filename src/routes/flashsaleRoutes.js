@@ -2,9 +2,11 @@ const router = require('express').Router();
 const flashSaleController = require('../controllers/flashsaleController')
 
 //Public
+router.get('/active',flashSaleController.getActiveFlashSales)
 router.get('/:id',flashSaleController.getFlashSaleById)
 router.get('/:id/items',flashSaleController.getFlashSaleItem)
 router.get('/:id/items/:item_id',flashSaleController.getFlashSaleItemById)
+
 
 //Admin
 router.post('/',flashSaleController.createFlashSale)

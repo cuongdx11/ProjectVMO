@@ -3,6 +3,7 @@ const ErrorRes = require("../helpers/ErrorRes");
 const Order = require("../models/orderModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { query } = require("express");
 require("dotenv").config();
 
 const getAllUser = async ({
@@ -17,11 +18,11 @@ const getAllUser = async ({
   try {
     const offset = page <= 1 ? 0 : page - 1;
     const limit = +pageSize || +process.env.LIMIT || 10;
-    const queries = { 
-        raw: false, 
-        nest: true ,
-        limit :  limit,
-        offset : offset * limit,
+    const queries = {
+      raw: false,
+      nest: true,
+      limit: limit,
+      offset: offset * limit,
     };
     let sequelizeOrder = [];
     if (sortBy && order) {
@@ -30,20 +31,19 @@ const getAllUser = async ({
       queries.order = sequelizeOrder;
     }
     if (search) query.name = { [Op.substring]: search };
-    const where = {...query}
+    const where = { ...query };
     if (filter && typeof filter === "object") {
-        Object.entries(filter).forEach(([key,value])=>{
-          if(value !== null && value !== undefined){
-            where[key] = value
-          }
-        })
+      Object.entries(filter).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          where[key] = value;
+        }
+      });
     }
 
     const { count, rows } = await User.findAndCountAll({
       where,
       ...queries,
       attributes: { exclude: ["password"] },
-      
     });
     return {
       users: rows,
@@ -122,7 +122,7 @@ const deleteUser = async (id) => {
 };
 const getUserOrders = async (
   token,
-  { page = 1, limit = process.env.LIMIT, status = null }
+  { page = 1, pageSize = null,sortBy = null,filter = null,order = null ,search = null,...query }
 ) => {
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
@@ -132,17 +132,29 @@ const getUserOrders = async (
       throw new ErrorRes(404, "Tài khoản không tồn tại");
     }
 
-    const queries = { raw: true, nest: true };
     const offset = page <= 1 ? 0 : page - 1;
-    const flimit = +limit;
-    queries.offset = offset * flimit;
-    queries.limit = flimit;
-
-    const where = { user_id: userId };
-    if (status) {
-      where.status = status;
+    const limit = +pageSize || +process.env.LIMIT || 10;
+    const queries = { 
+        raw: false, 
+        nest: true,
+        limit :  limit,
+        offset : offset * limit,
+    }; // không lấy instance, lấy data từ bảng khác
+    let sequelizeOrder = [];
+    if (sortBy && order) {
+      const orderDirection = order.toUpperCase() || 'asc'
+      sequelizeOrder.push([sortBy, orderDirection]);
+      queries.order = sequelizeOrder;
     }
-
+    if (search) query.name = { [Op.substring]: search };
+    const where = { user_id: userId,...query };
+    if (filter && typeof filter === "object") {
+      Object.entries(filter).forEach(([key,value])=>{
+        if(value !== null && value !== undefined){
+          where[key] = value
+        }
+      })
+    }
     const { count, rows } = await Order.findAndCountAll({
       where,
       ...queries,
@@ -154,8 +166,8 @@ const getUserOrders = async (
       message: "Lấy danh sách đơn hàng thành công",
       orders: rows,
       total: count,
-      totalPages: Math.ceil(count / flimit),
-      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      currentPage: +page,
     };
   } catch (error) {
     throw error;

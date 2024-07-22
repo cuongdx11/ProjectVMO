@@ -1,7 +1,9 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/dbConfig'); // Cập nhật đường dẫn cho đúng
 const Category = require('./categoryModel'); // Import model Categorie để thiết lập quan hệ
-const ItemImage = require('./itemimageModel')
+const ItemImage = require('./itemimageModel');
+const Review = require('./reviewModel');
+const User = require('./userModel')
 const Item = sequelize.define('Item', {
     id: {
         type: DataTypes.INTEGER,
@@ -61,4 +63,8 @@ const Item = sequelize.define('Item', {
 // Thiết lập quan hệ giữa Item và Categorie
 Item.belongsTo(Category, { as: 'category',    foreignKey: 'category_id' });
 Item.hasMany(ItemImage, { as: 'images', foreignKey: 'item_id' });
+Item.hasMany(Review,{as: 'reviews',foreignKey: 'item_id'})
+
+Review.belongsTo(Item, { foreignKey: 'item_id' });
+Review.belongsTo(User, { foreignKey: 'user_id' });
 module.exports = Item;

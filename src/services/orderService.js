@@ -231,6 +231,18 @@ const getOrderById = async(id) => {
           ]
         },
         {
+          model: OrderDiscount,
+          as: 'order_discounts',
+          attributes:['discount_applied'],
+          include:[
+            {
+              model: Voucher,
+              as:'voucher',
+              attributes:['code']
+            }
+          ]
+        },
+        {
           model: ShippingAddress,
           as: 'address_ship',
           attributes: ['receiver_name','phone_number','address_detail','ward','district','province','country']
@@ -393,10 +405,25 @@ const applyVoucher = async(orderData) =>{
 const calculateSubtotalAndUpdateStock =async(items,transaction) => {
   let subtotal = 0;
   const updatedItems = [];
+  const now = new Date();
+  const nowUTC = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
   await Promise.all(items.map(async(item)=>{
     const [dbItem,flashSaleItem] = await Promise.all([
       Item.findByPk(item.item_id,{transaction}),
-      FlashSaleItem.findOne({where:{item_id:item.item_id},transaction})
+      FlashSaleItem.findOne(
+        {
+          where:{
+          item_id:item.item_id
+        },
+        include: [{
+          model: FlashSale,
+          where: {
+            start_time: { [Op.lte]: nowUTC },
+            end_time: { [Op.gt]: nowUTC }
+          }
+        }],
+          transaction
+        })
     ])
     if(!dbItem){
       throw new ErrorRes(404,'Sản phẩm không tồn tại')
@@ -408,6 +435,8 @@ const calculateSubtotalAndUpdateStock =async(items,transaction) => {
     subtotal += priceSale * item.quantity;
     const name = dbItem.name
     await dbItem.update({ stock_quantity: dbItem.stock_quantity - item.quantity }, { transaction });
+    await flashSaleItem.update({quantity : flashSaleItem.quantity -item.quantity,
+      sold_quantity: flashSaleItem.sold_quantity + item.quantity },{transaction})
     updatedItems.push({ ...item,name : name, price: priceSale });
     
   }))
@@ -416,7 +445,7 @@ const calculateSubtotalAndUpdateStock =async(items,transaction) => {
 const getFlashSalePrice = async(flashSaleItem,regularPrice,transaction) => {
   if(!flashSaleItem) return regularPrice;
   const now = new Date();
-  const flashSale = await FlashSale.findByPk(flashSaleItem.flash_sale_id, { transaction });
+  const flashSale = await FlashSale.findByPk(flashSaleItem.flash_sale_id)
   if (flashSale && now >= flashSale.start_time && now <= flashSale.end_time) {
     return flashSaleItem.flash_sale_price;
   }
@@ -528,7 +557,11 @@ const checkOut = async(orderData) =>{
     const [subtotal, updatedItems] = await calculateSubtotalAndUpdateStock(items, transaction);
     const shippingAddress = await createShippingAddress(orderData, transaction);
     const shippingCost = await calculateShippingCost(shippingAddress);
-    const discount = await applyDiscount(voucher_code, subtotal, transaction);
+    let discount = 0
+    if(voucher_code) {
+      discount = await applyDiscount(voucher_code, subtotal, transaction);
+    }
+    
 
     const totalAmount = subtotal + shippingCost - discount;
 
@@ -537,7 +570,9 @@ const checkOut = async(orderData) =>{
     const order = await createOrderCheckOut(userId, shippingAddress.id, payment.id, shipment.id, subtotal, totalAmount, discount, notes, transaction);
 
     await createOrderItems(order.id, updatedItems, transaction);
-    await createOrderDiscount(order.id,voucher_code,discount,transaction);
+    if(voucher_code){
+      await createOrderDiscount(order.id,voucher_code,discount,transaction);
+    }
     // const userBuy = await User.findByPk(userId)
     // await createNotification(`Đơn hàng ${order.id} được mua bởi khách hàng ${userBuy.full_name}`,'NEW_ORDER')
     await transaction.commit();

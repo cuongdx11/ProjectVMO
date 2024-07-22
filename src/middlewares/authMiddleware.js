@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const User =require('../models/userModel')
 const Role = require('../models/roleModel')
 const Permission = require('../models/permissionModel')
+const redisClient = require('../config/redisConfig')
 require('dotenv').config();
 const authenticateToken = (req, res, next) => {
     try {
@@ -32,28 +33,32 @@ const checkPermission = (requiredPermission) => {
             if(!userReq){
                 return res.status(401).json({error: 'Unauthorized user!'})
             }
-            const user = await User.findByPk(userReq.userId,{
-                include: [{
-                    model: Role,
+            const userId = userReq.userId
+            let userPermissions = await redisClient.get(`permissions:${userId}`);
+            if(userPermissions){
+                userPermissions = JSON.parse(userPermissions)
+            }else{
+                const user = await User.findByPk(userReq.userId,{
                     include: [{
-                        model: Permission,
-                        where: {
-                            name : requiredPermission
-                        },
-                        required: false
+                        model: Role,
+                        include: [{
+                            model: Permission
+                        }]
                     }]
-                }]
-            })
-            if(!user){
-                return res.status(404).json({error: 'Unauthorized user!'})
+                })
+                if(!user){
+                    return res.status(404).json({error: 'Unauthorized user!'})
+                }
+                // Lưu quyền vào Redis
+                userPermissions = user.Roles.flatMap(role => role.Permissions.map(permission => permission.name));
+                await redisClient.set(`permissions:${userId}`, JSON.stringify(userPermissions));
             }
-            const hasPermission = user.Roles.some(role => 
-                role.Permissions.some(permission => permission.name === requiredPermission)
-            )
+            
+            // Kiểm tra quyền hạn yêu cầu
+            const hasPermission = userPermissions.includes(requiredPermission);
             if (!hasPermission) {
                 return res.status(403).json({ error: 'Insufficient permissions' });
             }
-            req.user = user
             next()
         } catch (error) {
             next(error)

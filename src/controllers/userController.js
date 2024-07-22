@@ -47,11 +47,13 @@ const createUser = async(req , res,next) => {
 }
 const updateUser = async(req , res,next) => {
     try {
+        const userData = req.body
         const {id} = req.params
         const file = req.file
-        const avatar = file.path
-        const userData = req.body
-        userData.avatar = avatar
+        if(file){
+            const avatar = file.path
+            userData.avatar = avatar
+        }
         const user = await userService.updateUser(id,userData)
         res.status(200).json(user);
     } catch (error) {
@@ -72,8 +74,7 @@ const getOrdersForUser = async (req, res, next) => {
         // const { userId } = req.params;
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1]; // Lấy token sau 'Bearer'
-        const { page, limit, status } = req.query;
-        const result = await userService.getUserOrders(token, { page, limit, status });
+        const result = await userService.getUserOrders(token, req.query);
         res.status(200).json(result);
     } catch (error) {
         next(error);

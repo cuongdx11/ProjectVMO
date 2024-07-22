@@ -3,6 +3,7 @@ const FlashSale = require('../models/flashsaleModel')
 const FlashSaleItem = require('../models/flashsaleitemModel')
 const NotificationFlashSale = require('../models/notificationFlashSaleModel')
 const Item = require('../models/itemModel')
+const { Op } = require('sequelize');
 const ErrorRes = require('../helpers/ErrorRes')
 const Queue = require('bull')
 const redisClient = require('../config/redisConfig')
@@ -155,6 +156,28 @@ const getFlashSaleItemById = async(id,item_id) => {
         throw error
     }
 }
+const getActiveFlashSales = async() => {
+    try {
+        const now = new Date()
+        // const nowUTC = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        const activeFlashSales = await FlashSale.findAll({
+            where: {
+                start_time: { [Op.lte]: now },
+                end_time: { [Op.gt]: now }
+              }
+        })
+        if(!activeFlashSales){
+            throw new ErrorRes(404,'Không có sản phẩm nào')
+        }
+        return{
+            status : "success",
+            message : "Lấy thành công",
+            data : activeFlashSales
+        }
+    } catch (error) {
+        throw error
+    }
+}
 module.exports = {
     createFlashSale,
     createFlashSaleItem,
@@ -162,5 +185,6 @@ module.exports = {
     updateFlashSale,
     deleteFlashSale,
     getFlashSaleItem,
-    getFlashSaleItemById
+    getFlashSaleItemById,
+    getActiveFlashSales
 }

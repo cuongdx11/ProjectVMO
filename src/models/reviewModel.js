@@ -11,11 +11,17 @@ const Review = sequelize.define('Review', {
     },
     item_id: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        references: {
+            model: 'Items',
+            key: 'id'
+        }
     },
     user_id: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        references: {
+            model: 'Users',
+            key: 'id'
+        }
     },
     rating: {
         type: DataTypes.INTEGER,
@@ -41,7 +47,6 @@ const Review = sequelize.define('Review', {
     tableName: 'Reviews'
 });
 
-Review.belongsTo(Item, { foreignKey: 'item_id' });
-Review.belongsTo(User, { foreignKey: 'user_id' });
+
 
 module.exports = Review;

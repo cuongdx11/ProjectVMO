@@ -12,6 +12,7 @@ const ErrorRes = require("../helpers/ErrorRes");
 require("dotenv").config();
 const redis = require('../config/redisConfig');
 const { Json } = require("sequelize/lib/utils");
+const Review = require("../models/reviewModel");
 const getAllItems = async () => {
   try {
     const items = await Item.findAll();
@@ -119,6 +120,11 @@ const getItemById = async (id) => {
           model:ItemImage,
           as: 'images',
           attributes : ['image_url']
+        },
+        {
+          model: Review,
+          as: 'reviews',
+          attributes : ['user_id','comment','rating','created_at'],
         }
       ]
     })
