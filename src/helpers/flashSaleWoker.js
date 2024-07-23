@@ -1,8 +1,8 @@
 const Queue = require('bull')
 const redisClient = require('../config/redisConfig')
 const flashsaleQueue = new Queue('flashsale-queue',{redis : redisClient})
-const {sendMailFlashSale,checkFlashSale} = require('../helpers/flashsaleNotification')
-const FlashSale = require('../models/flashsaleModel')
+const {sendMailFlashSale,checkFlashSale} = require('../helpers/flashSaleNotification')
+const FlashSale = require('../models/flashSaleModel')
 
 flashsaleQueue.process('notify-flashsale',async(job) => {
     const {flashSaleId} = job.data

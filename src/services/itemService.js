@@ -1,10 +1,10 @@
 const Item = require("../models/itemModel");
-const ItemImage = require("../models/itemimageModel");
+const ItemImage = require("../models/itemImageModel");
 const { Op } = require("sequelize");
 const cloudinary = require("cloudinary").v2;
 const OrderItem = require("../models/orderitemModel");
-const FlashSaleItem = require("../models/flashsaleitemModel");
-const FlashSale = require("../models/flashsaleModel");
+const FlashSaleItem = require("../models/flashSaleItemModel");
+const FlashSale = require("../models/flashSaleModel");
 const Category = require('../models/categoryModel')
 const readExcel = require('../helpers/readExcel')
 const uploadImage = require('../helpers/uploadImages')

@@ -1,4 +1,4 @@
-const FlashSale = require('../models/flashsaleModel')
+const FlashSale = require('../models/flashSaleModel')
 const cron = require('node-cron');
 const { Op } = require('sequelize');
 require('dotenv').config();

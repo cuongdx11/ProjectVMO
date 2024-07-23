@@ -1,6 +1,6 @@
 const cron = require('node-cron')
 const {Op} = require('sequelize')
-const FlashSale = require('../models/flashsaleModel')
+const FlashSale = require('../models/flashSaleModel')
 const nodemailer = require('nodemailer')
 const moment = require('moment');
 const NotificationFlashSale = require('../models/notificationFlashSaleModel')

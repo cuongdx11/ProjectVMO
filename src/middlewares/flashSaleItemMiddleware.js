@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 const Item = require('../models/itemModel');
-const FlashSale = require('../models/flashsaleModel');
-const FlashSaleItem = require('../models/flashsaleitemModel');
+const FlashSale = require('../models/flashSaleModel');
+const FlashSaleItem = require('../models/flashSaleItemModel');
 
 const flashSaleItem = async (req, res, next) => {
     try {

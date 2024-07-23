@@ -1,6 +1,6 @@
 const { sequelize } = require('../config/dbConfig')
 const FlashSale = require('../models/flashSaleModel')
-const FlashSaleItem = require('../models/flashsaleitemModel')
+const FlashSaleItem = require('../models/flashSaleItemModel')
 const NotificationFlashSale = require('../models/notificationFlashSaleModel')
 const Item = require('../models/itemModel')
 const { Op } = require('sequelize');
