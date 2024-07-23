@@ -1,46 +1,66 @@
 const Joi = require('joi');
 
 const orderSchema = Joi.object({
-  user_id: Joi.number().integer().required().messages({
+  userId: Joi.number().integer().required().messages({
     'number.base': 'ID người dùng phải là một số nguyên',
     'any.required': 'ID người dùng là bắt buộc'
   }),
-  shipping_address_id: Joi.number().integer().optional().allow(null).messages({
-    'number.base': 'ID địa chỉ giao hàng phải là một số nguyên'
+  full_name: Joi.string().required().messages({
+    'string.base': 'Tên đầy đủ phải là một chuỗi',
+    'any.required': 'Tên đầy đủ là bắt buộc'
   }),
-  shipment_id: Joi.number().integer().optional().allow(null).messages({
-    'number.base': 'ID vận chuyển phải là một số nguyên'
+  phone_number: Joi.string().required().messages({
+    'string.base': 'Số điện thoại phải là một chuỗi',
+    'any.required': 'Số điện thoại là bắt buộc'
   }),
-  payment_id: Joi.number().integer().optional().allow(null).messages({
-    'number.base': 'ID thanh toán phải là một số nguyên'
+  address: Joi.string().required().messages({
+    'string.base': 'Địa chỉ phải là một chuỗi',
+    'any.required': 'Địa chỉ là bắt buộc'
   }),
-  subtotal: Joi.number().precision(2).required().messages({
-    'number.base': 'Tổng tiền phải là một số',
-    'number.empty': 'Tổng tiền không được để trống',
-    'any.required': 'Tổng tiền là bắt buộc'
+  ward: Joi.string().required().messages({
+    'string.base': 'Phường phải là một chuỗi',
+    'any.required': 'Phường là bắt buộc'
   }),
-  total_amount: Joi.number().precision(2).required().messages({
-    'number.base': 'Số tiền thanh toán phải là một số',
-    'number.empty': 'Số tiền thanh toán không được để trống',
-    'any.required': 'Số tiền thanh toán là bắt buộc'
+  district: Joi.string().required().messages({
+    'string.base': 'Quận/Huyện phải là một chuỗi',
+    'any.required': 'Quận/Huyện là bắt buộc'
   }),
-  discount: Joi.number().precision(2).optional().allow(null).messages({
-    'number.base': 'Giảm giá phải là một số'
+  province: Joi.string().required().messages({
+    'string.base': 'Tỉnh/Thành phố phải là một chuỗi',
+    'any.required': 'Tỉnh/Thành phố là bắt buộc'
   }),
-  order_date: Joi.date().required().messages({
-    'date.base': 'Ngày đặt hàng phải là một ngày hợp lệ',
-    'any.required': 'Ngày đặt hàng là bắt buộc'
+  voucher_code: Joi.string().allow(null, '').optional().messages({
+    'string.base': 'Mã giảm giá phải là một chuỗi'
   }),
-  status: Joi.string().valid('pending', 'completed', 'cancelled').default('pending').messages({
-    'string.base': 'Trạng thái đơn hàng phải là một chuỗi',
-    'any.only': 'Trạng thái đơn hàng phải là "pending", "completed" hoặc "cancelled"'
+  paymentMethodId: Joi.number().integer().required().messages({
+    'number.base': 'ID phương thức thanh toán phải là một số nguyên',
+    'any.required': 'ID phương thức thanh toán là bắt buộc'
   }),
-  payment_status: Joi.string().valid('unpaid', 'paid', 'refunded').default('unpaid').messages({
-    'string.base': 'Trạng thái thanh toán phải là một chuỗi',
-    'any.only': 'Trạng thái thanh toán phải là "unpaid", "paid" hoặc "refunded"'
+  shippingMethodId: Joi.number().integer().required().messages({
+    'number.base': 'ID phương thức giao hàng phải là một số nguyên',
+    'any.required': 'ID phương thức giao hàng là bắt buộc'
+  }),
+  shippingCost: Joi.number().precision(2).required().messages({
+    'number.base': 'Phí vận chuyển phải là một số',
+    'any.required': 'Phí vận chuyển là bắt buộc'
   }),
   notes: Joi.string().optional().allow(null).messages({
     'string.base': 'Ghi chú phải là một chuỗi'
+  }),
+  items: Joi.array().items(
+    Joi.object({
+      item_id: Joi.number().integer().required().messages({
+        'number.base': 'ID sản phẩm phải là một số nguyên',
+        'any.required': 'ID sản phẩm là bắt buộc'
+      }),
+      quantity: Joi.number().integer().required().messages({
+        'number.base': 'Số lượng phải là một số nguyên',
+        'any.required': 'Số lượng là bắt buộc'
+      })
+    })
+  ).required().messages({
+    'array.base': 'Danh sách sản phẩm phải là một mảng',
+    'any.required': 'Danh sách sản phẩm là bắt buộc'
   })
 });
 

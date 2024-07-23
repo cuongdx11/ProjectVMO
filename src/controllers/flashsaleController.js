@@ -1,4 +1,4 @@
-const flashSaleService = require('../services/flashsaleService')
+const flashSaleService = require('../services/flashSaleService')
 
 const createFlashSale = async(req,res,next) => {
     try {
@@ -46,7 +46,6 @@ const deleteFlashSale = async(req,res,next) => {
         next(error)
     }
 }
-
 const getFlashSaleItem = async(req,res,next) => {
     try {
         const {id} = req.params

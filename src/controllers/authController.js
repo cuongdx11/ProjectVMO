@@ -1,4 +1,3 @@
-const ErrorRes = require('../helpers/ErrorRes');
 const authService = require('../services/authService');
 
 // Đăng ký người dùng

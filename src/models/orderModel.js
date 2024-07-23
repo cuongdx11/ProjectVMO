@@ -5,7 +5,7 @@ const Voucher = require('./voucherModel');
 const ShippingAddress = require('./shippingAddressModel');
 const Payment = require('./paymentModel');
 const Shipment = require('./shipmentModel');
-const OrderItem = require('./orderitemModel');
+const OrderItem = require('./orderItemModel');
 const Item = require('./itemModel')
 const Order = sequelize.define('Order', {
     id: {

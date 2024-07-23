@@ -1,5 +1,5 @@
 const { sequelize } = require('../config/dbConfig')
-const FlashSale = require('../models/flashsaleModel')
+const FlashSale = require('../models/flashSaleModel')
 const FlashSaleItem = require('../models/flashsaleitemModel')
 const NotificationFlashSale = require('../models/notificationFlashSaleModel')
 const Item = require('../models/itemModel')

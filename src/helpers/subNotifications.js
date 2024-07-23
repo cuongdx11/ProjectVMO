@@ -1,5 +1,5 @@
 const redis = require('redis');
-
+const Notification = require('../models/notificationModel')
 const subscriber = redis.createClient();
 
 subscriber.on('error', (err) => {
@@ -9,10 +9,15 @@ subscriber.on('error', (err) => {
 const connectSubscriber = async() => {
   try {
     await subscriber.connect();
-    await subscriber.subscribe('notifications', (message) => {
+    await subscriber.subscribe('notifications', async(message) => {
       try {
         const notification = JSON.parse(message);
-        // Xử lý thông báo, ví dụ như lưu vào database, gửi tới client, v.v.
+        // Xử lý thông báo lưu vào database
+        await Notification.create({
+          related_id: notification.related_id,
+          message: notification.message,
+          type: notification.type,
+        })
         console.log('Received notification:', notification);
       } catch (error) {
         console.error('Error processing notification:', error);
