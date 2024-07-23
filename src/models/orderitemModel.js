@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/dbConfig'); // Cập nhật đường dẫn cho đúng
-const Order = require('./orderModel'); // Import model Order để thiết lập quan hệ
-const Item = require('./itemModel'); // Import model Item để thiết lập quan hệ
+const { sequelize } = require('../config/dbConfig'); 
+
 
 const OrderItem = sequelize.define('OrderItem', {
     id: {

@@ -1,5 +1,5 @@
 const itemService = require('../services/itemService')
-const cloudinary = require('cloudinary').v2;
+
 
 const listItem  = async(req , res,next) => {
     try {

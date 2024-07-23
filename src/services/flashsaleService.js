@@ -159,7 +159,6 @@ const getFlashSaleItemById = async(id,item_id) => {
 const getActiveFlashSales = async() => {
     try {
         const now = new Date()
-        // const nowUTC = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
         const activeFlashSales = await FlashSale.findAll({
             where: {
                 start_time: { [Op.lte]: now },

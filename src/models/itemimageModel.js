@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/dbConfig'); // Cập nhật đường dẫn cho đúng
-const Item = require('./itemModel'); // Import model Item để thiết lập quan hệ
+const { sequelize } = require('../config/dbConfig'); 
+const Item = require('./itemModel'); 
 
 const ItemImage = sequelize.define('ItemImage', {
     id: {

@@ -3,7 +3,6 @@ const ErrorRes = require("../helpers/ErrorRes");
 const Order = require("../models/orderModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { query } = require("express");
 require("dotenv").config();
 
 const getAllUser = async ({

@@ -11,7 +11,7 @@ const Cart = sequelize.define('Cart', {
     user_id: {
         type: DataTypes.INTEGER,
         references: {
-            model: 'Users', // Tên bảng tham chiếu
+            model: 'Users', 
             key: 'id',
         },
         onUpdate: 'CASCADE',
@@ -24,11 +24,11 @@ const Cart = sequelize.define('Cart', {
     voucher_id: {
         type: DataTypes.INTEGER,
         references: {
-            model: 'Vouchers', // Tên bảng tham chiếu
+            model: 'Vouchers', 
             key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL', // Thay đổi hành động khi xóa voucher nếu cần
+        onDelete: 'SET NULL', 
     },
     total_amount: {
         type: DataTypes.DECIMAL(10, 2),

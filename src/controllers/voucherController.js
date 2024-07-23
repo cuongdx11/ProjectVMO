@@ -1,4 +1,3 @@
-const Voucher = require('../models/voucherModel')
 const voucherService = require('../services/voucherService')
 
 const getVoucherAvailable = async(req,res,next) => {

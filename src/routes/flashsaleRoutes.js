@@ -8,7 +8,6 @@ router.get('/:id',flashSaleController.getFlashSaleById)
 router.get('/:id/items',flashSaleController.getFlashSaleItem)
 router.get('/:id/items/:item_id',flashSaleController.getFlashSaleItemById)
 
-
 //Admin
 router.post('/',flashSaleValidate,flashSaleController.createFlashSale)
 router.post('/items',flashSaleController.createFlashSaleItem)

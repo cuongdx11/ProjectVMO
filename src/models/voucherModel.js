@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/dbConfig'); // Cập nhật đường dẫn cho đúng
+const { sequelize } = require('../config/dbConfig'); 
 
 const Voucher = sequelize.define('Voucher', {
     id: {

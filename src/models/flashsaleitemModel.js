@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/dbConfig'); // Cập nhật đường dẫn cho đúng
-const FlashSale = require('./flashSaleModel'); // Import model FlashSale để thiết lập quan hệ
-const Item = require('./itemModel'); // Import model Item để thiết lập quan hệ
+const { sequelize } = require('../config/dbConfig'); 
+const FlashSale = require('./flashSaleModel'); 
+const Item = require('./itemModel'); 
 
 const FlashSaleItem = sequelize.define('FlashSaleItem', {
     id: {

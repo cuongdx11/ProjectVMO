@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/dbConfig');
-const User = require('./userModel'); // Đảm bảo bạn đã có model User
-const Role = require('./roleModel');
+
 
 const UserRole = sequelize.define('UserRole', {
     user_id: {

@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/dbConfig'); 
 const User = require('./userModel'); 
-const Voucher = require('./voucherModel'); 
 const ShippingAddress = require('./shippingAddressModel');
 const Payment = require('./paymentModel');
 const Shipment = require('./shipmentModel');

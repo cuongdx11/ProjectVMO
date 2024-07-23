@@ -1,7 +1,5 @@
 const nodemailer = require('nodemailer');
-const Order = require('../models/orderModel');
 const User = require('../models/userModel');
-const Item = require('../models/itemModel')
 const transporter = nodemailer.createTransport({
   service: 'gmail', // hoặc một dịch vụ email khác bạn sử dụng
   auth: {

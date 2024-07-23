@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/dbConfig'); // Cập nhật đường dẫn cho đúng
-const Category = require('./categoryModel'); // Import model Categorie để thiết lập quan hệ
+const { sequelize } = require('../config/dbConfig'); 
+const Category = require('./categoryModel'); 
 const ItemImage = require('./itemImageModel');
 const Review = require('./reviewModel');
 const User = require('./userModel')
