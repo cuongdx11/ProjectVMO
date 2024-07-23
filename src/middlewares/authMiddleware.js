@@ -35,7 +35,7 @@ const checkPermission = (requiredPermission) => {
             }
             const userId = userReq.userId
             let userPermissions = await redisClient.get(`permissions:${userId}`);
-            if(userPermissions){
+            if(userPermissions&&userPermissions.includes(requiredPermission)){
                 userPermissions = JSON.parse(userPermissions)
             }else{
                 const user = await User.findByPk(userReq.userId,{

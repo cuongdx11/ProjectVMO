@@ -15,6 +15,7 @@ const updateFlashSaleStatus = require('./src/helpers/updateFlashSaleStatus')
 require('./src/config/redisConfig')
 require('./src/helpers/emailWoker')
 require('./src/helpers/flashSaleWoker')
+require('./src/helpers/subNotifications')
 //CRUD
 app.use(express.json())
 //client gui len la mang thi cai nay chuyen sang json

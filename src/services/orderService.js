@@ -575,13 +575,21 @@ const checkOut = async(orderData) =>{
     }
     // const userBuy = await User.findByPk(userId)
     // await createNotification(`Đơn hàng ${order.id} được mua bởi khách hàng ${userBuy.full_name}`,'NEW_ORDER')
-    await transaction.commit();
-    // await sendOrderConfirmationEmail(order,updatedItems,shippingCost)
+    // const notificationMessage = `Đơn hàng ${order.id} được mua bởi khách hàng ${userBuy.full_name}`;
+    await redisClient.publish('notifications',JSON.stringify({
+      type: 'NEW_ORDER',
+      message: 'Thanh cong',
+      related_id: order.id,
+      userId : userId
+
+    }))
     await emailQueue.add('order-confirmation', {
       orderId: order.id,
       items: updatedItems,
       shippingCost: shippingCost
   });
+    await transaction.commit();
+   
     if (paymentMethodId === 2) {
       const vnpayUrl = await createPaymentUrlOrder(order.id,totalAmount,'NCB')
       return { order, paymentUrl: vnpayUrl };

@@ -1,7 +1,7 @@
 const ErrorRes = require("../helpers/ErrorRes");
 const Category = require("../models/categoryModel");
 const { Op } = require("sequelize");
-
+const { sequelize } = require('../config/dbConfig');
 const createCategory = async (categoryData) => {
   try {
     const { name, position } = categoryData;
@@ -119,10 +119,44 @@ const getCategories = async ({
     throw error;
   }
 };
+const changePosition = async(id,newPosition) => {
+  try {
+    const category = await Category.findByPk(id)
+    if (!category) {
+      throw new ErrorRes(404, "Danh mục không tồn tại");
+    }
+    const currentPos = category.position
+    await Category.update({ position: sequelize.literal('position - 1') }, {
+      where: {
+        position: {
+          [Op.gt]: currentPos
+        }
+      }
+    })
+  
+    await Category.update({ position: sequelize.literal('position + 1') }, {
+      where: {
+        position: {
+          [Op.gte]: newPosition
+        }
+      }
+    }) 
+    category.position = newPosition;
+    await category.save();
+    return {
+      status: "success",
+      message: "Thay đổi vị trí thành công",
+      category
+    }
+  } catch (error) {
+    throw error
+  }
+}
 module.exports = {
   createCategory,
   getCategoryById,
   updateCategory,
   deleteCategory,
   getCategories,
+  changePosition
 };
