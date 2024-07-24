@@ -66,8 +66,19 @@ const forgotPass = async(req,res,next) => {
 const resetPass = async(req,res,next)  => {
     try {
         const { token } = req.query;
-        const { newPassword } = req.body;
-        const resp = await authService.resetPass(newPassword ,token)
+        const { newPass } = req.body;
+        const resp = await authService.resetPass(newPass ,token)
+        res.status(200).json(resp)
+    } catch (error) {
+        next(error)
+    }
+}
+const changePass = async(req,res,next) => {
+    try {
+        const authHeader = req.headers['authorization'];
+        const accessToken = authHeader && authHeader.split(' ')[1];
+        const {newPass,oldPass} = req.body
+        const resp = await authService.changePass(accessToken,oldPass,newPass)
         res.status(200).json(resp)
     } catch (error) {
         next(error)
@@ -80,5 +91,6 @@ module.exports = {
     refreshToken,
     logout,
     forgotPass,
-    resetPass
+    resetPass,
+    changePass
 };

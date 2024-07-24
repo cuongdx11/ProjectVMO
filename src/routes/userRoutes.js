@@ -10,7 +10,7 @@ router.use(authenticateToken.authenticateToken)
 
 //User
 router.get('/my-orders', user.getOrdersForUser)
-router.post('/change-password',user.changePass)
+
 
 //Admin
 router.get('/' ,authMiddleware.checkPermission(PERMISSIONS.VIEW_USERS),user.getUsers)

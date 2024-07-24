@@ -12,18 +12,6 @@ const getUsers = async (req, res,next) => {
     }
 };
 
-const changePass = async(req,res,next) => {
-    try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1]; // Lấy token sau 'Bearer'
-        const {newPass} = req.body
-        const resp = await authService.changePass(token,newPass)
-        res.status(200).json(resp)
-    } catch (error) {
-        next(error)
-    }
-}
-
 const getUserById = async(req,res,next) => {
     try {
         const {id} = req.params;
@@ -83,7 +71,6 @@ const getOrdersForUser = async (req, res, next) => {
 
 module.exports = {
     getUsers,
-    changePass,
     getUserById,
     createUser,
     updateUser,
