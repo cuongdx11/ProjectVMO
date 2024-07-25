@@ -169,7 +169,6 @@ const verifyEmail = async (token) => {
         const user = await User.findByPk(decoded.userId);
 
         if (!user) {
-            // throw new Error('User not found');
             throw new ErrorRes(404, 'Tài khoản không tồn tại')
         }
 

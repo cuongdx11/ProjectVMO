@@ -64,16 +64,13 @@ const transferGuestCartToUserCart = async (user_id, session_id) => {
             where: { session_id, user_id: null, status: 'active' },
             transaction
         });
-
         if (guestCart) {
             // Cập nhật giỏ hàng với user_id và xóa session_id
             await guestCart.update({ 
                 user_id, 
                 session_id: null  // Xóa session_id
             }, { transaction });
-
         } 
-
         await transaction.commit();
         return guestCart;
     } catch (error) {

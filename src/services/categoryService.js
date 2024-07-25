@@ -113,7 +113,7 @@ const getCategories = async ({
       items: rows,
       total: count,
       totalPages: Math.ceil(count / limit),
-      currentPage: page,
+      currentPage: +page,
     };
   } catch (error) {
     throw error;

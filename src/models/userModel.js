@@ -70,8 +70,11 @@ const User = sequelize.define('User', {
     timestamps: false,
     tableName: 'Users'
 });
-User.belongsToMany(Role, { through: UserRole, foreignKey: 'user_id' });
-Role.belongsToMany(User, { through: UserRole, foreignKey: 'role_id' });
- 
+User.belongsToMany(Role, {as:'role', through: UserRole, foreignKey: 'user_id' });
+Role.belongsToMany(User, {as:'userRoles' ,through: UserRole, foreignKey: 'role_id' });
+UserRole.belongsTo(User,{as:'user',foreignKey:'user_id'})
+UserRole.belongsTo(Role,{as:'role',foreignKey:'role_id'})
+User.hasMany(UserRole,{as:'roleUsers',foreignKey:'user_id'})
+Role.hasMany(UserRole,{as:'roles',foreignKey:'role_id'})
 
 module.exports = User;

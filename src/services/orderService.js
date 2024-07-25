@@ -1,5 +1,5 @@
 const Order = require("../models/orderModel");
-const OrderItem = require('../models/orderitemModel')
+const OrderItem = require('../models/orderItemModel')
 const Voucher = require("../models/voucherModel");
 const Item = require("../models/itemModel");
 const { sequelize } = require('../config/dbConfig');
@@ -493,10 +493,12 @@ const createShippingAddress = async (orderData, transaction) => {
     country: 'Viet Nam',
   }, { transaction });
 };
-const createShipment = async (shippingMethodId, shippingCost, transaction) => {
+
+const createShipment = async (shippingMethodId, shippingCost,trackingNumber, transaction) => {
   return Shipment.create({
     shipping_method_id: shippingMethodId,
     shipping_cost: shippingCost,
+    tracking_number: trackingNumber,
     status: 'pending',
   }, { transaction });
 };
@@ -565,7 +567,8 @@ const checkOut = async(orderData) =>{
     const totalAmount = subtotal + shippingCost - discount;
 
     const payment = await createPayment(paymentMethodId, totalAmount, transaction);
-    const shipment = await createShipment(shippingMethodId, shippingCost, transaction);
+    const trackingNumber = 'VMO'+ payment.id
+    const shipment = await createShipment(shippingMethodId, shippingCost,trackingNumber, transaction);
     const order = await createOrderCheckOut(userId, shippingAddress.id, payment.id, shipment.id, subtotal, totalAmount, discount, notes, transaction);
 
     await createOrderItems(order.id, updatedItems, transaction);
