@@ -6,6 +6,11 @@ const crypto = require('crypto');
 const ErrorRes = require('../helpers/ErrorRes')
 const { Op } = require('sequelize');
 require('dotenv').config()
+const redisClient = require('../config/redisConfig');
+const Queue = require('bull');
+const emailQueue = new Queue('email-queue', {
+    redis: redisClient
+});
 const register = async (username, email, password,is_notification) => {
     try {
         // Hash mật khẩu trước khi lưu vào cơ sở dữ liệu
@@ -20,8 +25,12 @@ const register = async (username, email, password,is_notification) => {
         const verificationToken = jwt.sign({ userId: newUser.id, email: newUser.email }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '1h' // Thời gian hết hạn của token
         });
-        await sendMail.sendVerificationEmail(email,verificationToken)
-        console.log(`Verification email sent to ${email}`);
+        // await sendMail.sendVerificationEmail(email,verificationToken)
+        // console.log(`Verification email sent to ${email}`);
+        await emailQueue.add('verify-email',{
+            email:email,
+            verificationToken:verificationToken
+        })
         // return  newUser;
         return {
             status: "success",

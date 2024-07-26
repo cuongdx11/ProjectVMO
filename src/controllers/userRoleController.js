@@ -25,7 +25,7 @@ const updatedUserRole = async(req,res,next) => {
     try {
         const {userId} = req.params
         const {userRoleData} = req.body
-        const userRole = await userRoleService.updatedUserRole(userId,userRoleData)
+        const userRole = await userRoleService.updateUserRole(userId,userRoleData)
         res.status(200).json(userRole)
     } catch (error) {
         next(error)

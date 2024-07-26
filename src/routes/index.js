@@ -11,6 +11,7 @@ const role = require('./roleRoutes')
 const notification = require('./notificationRoutes')
 const permission = require('./permissionRoutes')
 const userRole = require('./userRoleRoutes')
+const rolePermission = require('./rolePermissionRoutes')
 const errorHandling = require('../middlewares/errorHandlingMiddleware')
 const intRoutes = (app) =>{
 
@@ -27,6 +28,7 @@ const intRoutes = (app) =>{
     app.use('/api/v1/permissions',permission)
     app.use('/api/v1/notifications',notification)
     app.use('/api/v1/user-role',userRole)
+    app.use('/api/v1/role-permission',rolePermission)
     app.use(errorHandling)
 
     

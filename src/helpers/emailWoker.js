@@ -2,7 +2,7 @@ const Queue = require('bull');
 const redisClient = require('../config/redisConfig');
 const  Order  = require('../models/orderModel');
 const {sendOrderConfirmationEmail} = require('../helpers/sendOrderConfirmationEmail')
-
+const emailService = require('../services/emailService')
 const emailQueue = new Queue('email-queue', { redis: redisClient });
 
 emailQueue.process('order-confirmation', async (job) => {
@@ -19,6 +19,16 @@ emailQueue.process('order-confirmation', async (job) => {
     throw error; // Ném lỗi để Bull biết job đã thất bại
   }
 });
+
+emailQueue.process('verify-email',async(job) => {
+  try {
+      const { email, verificationToken } = job.data;
+      await emailService.sendVerificationEmail(email,verificationToken)
+      console.log(`Đã gửi email xác nhận cho email ${email}`)
+  } catch (error) {
+    throw error
+  }
+})
 
 // Xử lý sự kiện completed
 emailQueue.on('completed', (job) => {

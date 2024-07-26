@@ -32,7 +32,7 @@ const authLoginSchema = Joi.object({
         'string.empty': 'Email không được để trống',
         'any.required': 'Email là bắt buộc'
     }),
-    password: Joi.string().min(6).max(30).required().messages({
+    password: Joi.string().min(6).max(100).required().messages({
         'string.base': 'Mật khẩu phải là một chuỗi',
         'string.empty': 'Mật khẩu không được để trống',
         'string.min': 'Mật khẩu phải có ít nhất 6 ký tự',
