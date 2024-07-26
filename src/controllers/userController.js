@@ -68,14 +68,51 @@ const getOrdersForUser = async (req, res, next) => {
         next(error);
     }
 }
+const getProfileUser = async(req,res,next) => {
+    try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1]; 
+        const user = await userService.getProfileUser(token)
+        res.status(200).json(user);
+    } catch (error) {
+        next(error)
+    }
+}
+const updateProfileUser = async(req,res,next) => {
+    try {
 
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1]; 
+        const profileData = req.body
+        const user = await userService.updateProfileUser(token,profileData)
+        res.status(200).json(user);
+    } catch (error) {
+        next(error)
+    }
+}
+
+const updateAvatarUser = async(req,res,next) => {
+    try {
+        const file = req.file
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1]; 
+        const avatar = file.path
+        const user = await userService.updateAvatarUser(token,avatar)
+        res.status(200).json(user);
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     getUsers,
     getUserById,
+    getProfileUser,
     createUser,
     updateUser,
     deleteUser,
     getOrdersForUser,
+    updateProfileUser,
+    updateAvatarUser
     
     
 }

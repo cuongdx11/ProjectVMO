@@ -1,6 +1,6 @@
 const authService = require('../services/authService');
 
-// Đăng ký người dùng
+
 const register = async (req, res,next) => {
     const { username, email, password,is_notification } = req.body;
 
@@ -11,8 +11,6 @@ const register = async (req, res,next) => {
         next(error)
     }
 };
-
-// Đăng nhập
 const login = async (req, res,next) => {
     const { email, password } = req.body;
 

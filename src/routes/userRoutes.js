@@ -10,12 +10,15 @@ router.use(authenticateToken.authenticateToken)
 
 //User
 router.get('/my-orders', user.getOrdersForUser)
-
+router.get('/profile',user.getProfileUser)
+router.put('/profile',user.updateProfileUser)
+router.put('/profile/avatar',uploadAvatar.uploadImageAvatar,user.updateAvatarUser)
 
 //Admin
 router.get('/' ,authMiddleware.checkPermission(PERMISSIONS.VIEW_USERS),user.getUsers)
 router.post('/',[adminMiddleware.isAdmin],uploadAvatar.uploadImageAvatar,validateUser,user.createUser)
 router.delete('/:id',[adminMiddleware.isAdmin],user.deleteUser)
+
 
 //User or Admin
 router.get('/:id',user.getUserById)

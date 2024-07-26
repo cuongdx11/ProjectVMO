@@ -172,12 +172,73 @@ const getUserOrders = async (
     throw error;
   }
 };
+const getProfileUser = async(token) => {
+  try {
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      const userId = decoded.userId;
+      const user = await User.findOne({
+        where: { id: userId },
+        attributes: ['username','full_name','phone','email','avatar','is_verified']
+      })
+      if (!user) throw new ErrorRes(404, "Tài khoản không tồn tại")
+   
+      return {
+        status: "success",
+        message: "Lấy thông tin tài khoản thành công",
+        user: user
+      }
+  } catch (error) {
+    throw error
+  }
+}
+const updateProfileUser = async(token,profileData) => {
+  try {
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const userId = decoded.userId;
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw new ErrorRes(404, "Tài khoản không tồn tại");
+    }
+    
+    await user.update(profileData)
+    return {
+      status: "success",
+      message: "Cập nhật thông tin thành công",
+      user
+    }
+
+  } catch (error) {
+    throw error
+  }
+}
+const updateAvatarUser = async(token,avatar) => {
+  try {
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const userId = decoded.userId;
+    const user = await User.findByPk(userId)
+    if (!user) {
+      throw new ErrorRes(404, "Tài khoản không tồn tại");
+    }
+    await user.update({
+      avatar
+    })
+    return {
+      status: "success",
+      message: "Cập nhật ảnh đại diện thành công",
+    }
+  } catch (error) {
+    throw error
+  }
+}
 
 module.exports = {
   getAllUser,
   getUserById,
+  getProfileUser,
   createUser,
   updateUser,
   deleteUser,
   getUserOrders,
+  updateProfileUser,
+  updateAvatarUser,
 };

@@ -15,6 +15,17 @@ const register = async (username, email, password,is_notification) => {
     try {
         // Hash mật khẩu trước khi lưu vào cơ sở dữ liệu
         const hashedPassword = await bcrypt.hash(password, parseInt(process.env.SALT, 10));
+        const check = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { email: email },
+                    { username: username }
+                ]
+            }
+        })
+        if (check) {
+            throw new ErrorRes(409, check.email === email ? 'Email đã tồn tại' : 'Username đã tồn tại');
+        }
         // Tạo người dùng mới
         const newUser = await User.create({
             username,
@@ -22,6 +33,7 @@ const register = async (username, email, password,is_notification) => {
             password: hashedPassword,
             is_notification 
         });
+       
         const verificationToken = jwt.sign({ userId: newUser.id, email: newUser.email }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '1h' // Thời gian hết hạn của token
         });
@@ -35,7 +47,6 @@ const register = async (username, email, password,is_notification) => {
         return {
             status: "success",
             message: "Đăng ký thành công , vui lòng kiểm tra mail để xác minh tài khoản",
-            data: newUser
         }
     } catch (error) {
         throw error;
