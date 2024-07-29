@@ -41,8 +41,10 @@ const checkPermission = (requiredPermission) => {
                 const user = await User.findByPk(userReq.userId,{
                     include: [{
                         model: Role,
+                        as: 'role',
                         include: [{
-                            model: Permission
+                            model: Permission,
+                            as:'permissions'
                         }]
                     }]
                 })
@@ -50,7 +52,7 @@ const checkPermission = (requiredPermission) => {
                     return res.status(404).json({error: 'Unauthorized user!'})
                 }
                 // Lưu quyền vào Redis
-                userPermissions = user.Roles.flatMap(role => role.Permissions.map(permission => permission.name));
+                userPermissions = user.role.flatMap(role => role.permissions.map(permission => permission.name));
                 await redisClient.set(`permissions:${userId}`, JSON.stringify(userPermissions));
             }
             

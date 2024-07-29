@@ -58,7 +58,8 @@ const deleteCategory = async (req, res,next) => {
 };
 const changePosition = async(req,res,next) => {
     try {
-        const {id,newPosition} = req.body
+        const {id} = req.params
+        const {newPosition} = req.body
         const category = await categoryService.changePosition(id,newPosition)
         return res.status(200).json(category)
     } catch (error) {

@@ -18,17 +18,20 @@ const flashSaleItem = async (req, res, next) => {
             where: {
                 item_id: id
             },
+            attributes: ['flash_sale_price','quantity','sold_quantity'],
             include: [{
                 model: FlashSale,
+                as:'flashSale',
                 where: {
                     start_time: { [Op.lte]: currentTime },
                     end_time: { [Op.gte]: currentTime }
-                }
+                },
+                attributes: ['name','status','start_time','end_time']
             }]
         });
 
         if (flashSaleItem) {
-            req.flashsale = flashSaleItem
+            req.flashSaleItem = flashSaleItem
         }
        
         next()

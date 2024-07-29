@@ -57,7 +57,9 @@ const FlashSaleItem = sequelize.define('FlashSaleItem', {
 });
 
 // Thiết lập quan hệ giữa FlashSaleItem và FlashSale, Item
-FlashSaleItem.belongsTo(FlashSale, { foreignKey: 'flash_sale_id' });
-FlashSaleItem.belongsTo(Item, { foreignKey: 'item_id' });
+FlashSaleItem.belongsTo(FlashSale, {as:'flashSale', foreignKey: 'flash_sale_id' });
+FlashSale.hasMany(FlashSaleItem,{as: 'items',foreignKey: 'flash_sale_id'})
+FlashSaleItem.belongsTo(Item, {as:'flash_sale', foreignKey: 'item_id' });
+
 
 module.exports = FlashSaleItem;

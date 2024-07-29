@@ -4,10 +4,6 @@ const { Op } = require("sequelize");
 const { sequelize } = require('../config/dbConfig');
 const createCategory = async (categoryData) => {
   try {
-    const { name, position } = categoryData;
-    if (!name || !position) {
-      throw new ErrorRes(400, "Thiếu trường bắt buộc");
-    }
     const newCategory = await Category.create(categoryData);
     return {
       status: "success",

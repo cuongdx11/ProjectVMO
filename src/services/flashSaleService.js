@@ -79,7 +79,18 @@ const createFlashSaleItem = async(flashsaleItemData) => {
 }
 const getFlashSaleById = async(id) => {
     try {
-        const flashSale = await FlashSale.findByPk(id)
+        const flashSale = await FlashSale.findOne({
+            where: {
+                id: id
+            },
+            include: [
+                {
+                    model: FlashSaleItem,
+                    as: 'items',
+                    attributes: ['item_id','original_price','flash_sale_price','quantity','sold_quantity']
+                }
+            ]
+        })
         if(!flashSale){
             throw new ErrorRes(404,'Flash sale không tồn tại')
         }

@@ -2,7 +2,7 @@ const Item = require("../models/itemModel");
 const ItemImage = require("../models/itemImageModel");
 const { Op } = require("sequelize");
 const cloudinary = require("cloudinary").v2;
-const OrderItem = require("../models/orderitemModel");
+const OrderItem = require("../models/orderItemModel");
 const Category = require('../models/categoryModel')
 const readExcel = require('../helpers/readExcel')
 const uploadImage = require('../helpers/uploadImages')
@@ -10,6 +10,8 @@ const ErrorRes = require("../helpers/ErrorRes");
 require("dotenv").config();
 const redis = require('../config/redisConfig');
 const Review = require("../models/reviewModel");
+const FlashSale = require("../models/flashSaleModel");
+const FlashSaleItem = require("../models/flashSaleItemModel");
 
 const getAllItems = async () => {
   try {
@@ -32,13 +34,13 @@ const getPageItem = async ({
   ...query
 }) => {
   try {
-    const getAllItem = await redis.get('get-list-item')
-    if(getAllItem) {
-      return {
-        status: 'success',
-        data: JSON.parse(getAllItem)
-      }
-    }
+    // const getAllItem = await redis.get('get-list-item')
+    // if(getAllItem) {
+    //   return {
+    //     status: 'success',
+    //     data: JSON.parse(getAllItem)
+    //   }
+    // }
     const offset = page <= 1 ? 0 : page - 1;
     const limit = +pageSize || +process.env.LIMIT || 10;
     const queries = { 
@@ -71,13 +73,13 @@ const getPageItem = async ({
       where,
       ...queries,
       include: [
-        {
-          model: ItemImage,
-          as: 'images', // Tên alias nếu bạn đã định nghĩa
-          attributes : ['image_url'],
-          required: false, // Để không loại bỏ các item không có ảnh chi tiết
-          separate: true
-        },
+        // {
+        //   model: ItemImage,
+        //   as: 'images', // Tên alias nếu bạn đã định nghĩa
+        //   attributes : ['image_url'],
+        //   required: false, // Để không loại bỏ các item không có ảnh chi tiết
+        //   separate: true
+        // },
         {
           model: Category,
           as: 'category', 
@@ -85,13 +87,13 @@ const getPageItem = async ({
         }
       ],
     });
-    redis.set('get-list-item',JSON.stringify({
-      status: "success",
-      total: count,
-      items: rows,
-      totalPages: Math.ceil(count / limit),
-      currentPage: +page
-    }))
+    // redis.set('get-list-item',JSON.stringify({
+    //   status: "success",
+    //   total: count,
+    //   items: rows,
+    //   totalPages: Math.ceil(count / limit),
+    //   currentPage: +page
+    // }))
     return {
       status: "success",
       total: count,

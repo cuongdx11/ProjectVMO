@@ -23,11 +23,11 @@ const listItemById  = async(req , res,next) => {
 const itemById = async(req, res,next) => {
     try {
         const {id} = req.params;
-        const flashsale = req.flashsale
+        const flashSaleItem = req.flashSaleItem
         const item = await itemService.getItemById(id);
         return res.status(200).json({
             item,
-            flashsale
+            flashSaleItem
         });
     } catch (error) {
         next(error)

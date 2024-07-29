@@ -15,6 +15,16 @@ const transporter = nodemailer.createTransport({
 
 const sendMailFlashSale = async(flashSale) => {
     try {
+        const notificationFlashSale = await NotificationFlashSale.findOne({
+            where: {
+                flash_sale_id: flashSale.id
+            }
+        })
+        if(notificationFlashSale.is_send === 1){
+            return {
+                message: 'Thông báo đã được gửi rồi'
+            }
+        }
         const users = await User.findAll({
             where : {
                 is_notification : 1
@@ -23,7 +33,7 @@ const sendMailFlashSale = async(flashSale) => {
         const userEmails = users.map(user => user.email)
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: userEmails.join(','),
+            bcc: userEmails.join(','),
             subject: `Flash Sale "${flashSale.name}" sắp bắt đầu!`,
             text: `Flash Sale "${flashSale.name}" sẽ bắt đầu sau 15 phút. Đừng bỏ lỡ!`,
             html: `<b>Flash Sale "${flashSale.name}" sẽ bắt đầu sau 15 phút. Đừng bỏ lỡ!</b>`
@@ -56,10 +66,12 @@ const checkFlashSale = async() => {
             }]
         })
         for(let notification of notificationsFlashSale){
-            await sendMailFlashSale(notification.FlashSale)
-            console.log('Da gui mail')
-            notification.is_sent = true
-            await notification.save()
+            if(notification.is_send === false){
+                await sendMailFlashSale(notification.FlashSale)
+                console.log('Da gui mail')
+                notification.is_sent = true
+                await notification.save()
+            }  
         }
     } catch (error) {
         throw error

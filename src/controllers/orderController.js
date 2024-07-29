@@ -12,11 +12,8 @@ const getOrders = async(req,res,next) => {
 }
 const createOrder = async(req,res,next) => {
     try {
-        const { items, voucher_code } = req.body;
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1]; // Lấy token sau 'Bearer'
-        const decode = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        const newOrder = await orderService.createOrder(decode.userId,items,voucher_code)
+        const orderData = req.body
+        const newOrder = await orderService.createOrder(orderData)
         res.status(201).json(newOrder)
     } catch (error) {
         next(error)
@@ -77,15 +74,15 @@ const applyVoucher = async(req,res,next) => {
         next(error)
     }
 }
-const checkOut = async(req,res,next) => {
-    try {
-        const orderData = req.body
-        const checkOut = await orderService.checkOut(orderData)
-        res.status(200).json(checkOut)
-    } catch (error) {
-        next(error)
-    }
-}
+// const checkOut = async(req,res,next) => {
+//     try {
+//         const orderData = req.body
+//         const checkOut = await orderService.checkOut(orderData)
+//         res.status(200).json(checkOut)
+//     } catch (error) {
+//         next(error)
+//     }
+// }
 module.exports = {
     createOrder,
     getOrderById,
@@ -94,6 +91,5 @@ module.exports = {
     cancelledOrder,
     payOrder,
     applyVoucher,
-    checkOut,
     getOrders
 }
