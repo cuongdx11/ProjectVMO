@@ -2,7 +2,8 @@ const Queue = require('bull');
 const redisClient = require('../config/redisConfig');
 const  Order  = require('../models/orderModel');
 const {sendOrderConfirmationEmail} = require('../helpers/sendOrderConfirmationEmail')
-const emailService = require('../services/emailService')
+const emailService = require('../services/emailService');
+const Role = require('../models/roleModel');
 const emailQueue = new Queue('email-queue', { redis: redisClient });
 
 emailQueue.process('order-confirmation', async (job) => {
@@ -25,6 +26,27 @@ emailQueue.process('verify-email',async(job) => {
       const { email, verificationToken } = job.data;
       await emailService.sendVerificationEmail(email,verificationToken)
       console.log(`Đã gửi email xác nhận cho email ${email}`)
+  } catch (error) {
+    throw error
+  }
+})
+
+emailQueue.process('send-information',async(job) => {
+  try {
+    const {email,password,fullName} = job.data
+    await emailService.sendInformationLogin(fullName,email,password)
+    console.log(`Đã gửi email thông tin đăng nhập cho email ${email}`)
+  } catch (error) {
+    throw error
+  }
+})
+emailQueue.process('invitation-email',async(job) => {
+  try {
+    const {email , verificationToken , fullName,roleId } = job.data;
+    const role = await Role.findByPk(roleId)
+    const nameRole = role.description
+    await emailService.sendInvitationEmail(email,fullName,verificationToken,nameRole)
+    console.log(`Đã gửi email lời cho email ${email}`)
   } catch (error) {
     throw error
   }

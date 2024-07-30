@@ -1,5 +1,13 @@
 const voucherService = require('../services/voucherService')
 
+const getAllVoucher = async(req,res,next) => {
+    try {
+        const listVoucher = await voucherService.getAllVoucher(req.query)
+        return res.status(200).json(listVoucher);
+    } catch (error) {
+        next(error)
+    }
+}
 const getVoucherAvailable = async(req,res,next) => {
     try {
         const vouchers = await voucherService.getVoucherAvailable(req.query)
@@ -35,7 +43,6 @@ const getVoucherById = async(req,res,next) => {
         next(error)
     }
 }
-
 const updateVoucher = async(req,res,next) => {
     try {
         const {id} = req.params
@@ -55,11 +62,13 @@ const deleteVoucher = async(req,res,next) => {
         next(error)
     }
 }
+
 module.exports ={
     getVoucherAvailable,
     checkVoucher,
     createVoucher,
     getVoucherById,
     updateVoucher,
-    deleteVoucher
+    deleteVoucher,
+    getAllVoucher
 }

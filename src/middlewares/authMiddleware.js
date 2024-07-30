@@ -61,6 +61,7 @@ const checkPermission = (requiredPermission) => {
             if (!hasPermission) {
                 return res.status(403).json({ error: 'Insufficient permissions' });
             }
+            req.userPermissions = userPermissions
             next()
         } catch (error) {
             next(error)

@@ -18,6 +18,14 @@ const createFlashSaleItem = async(req,res,next) => {
         next(error)
     }
 }
+const getAllFlashSale = async(req,res,next) => {
+    try {
+        const listFlashSale = await flashSaleService.getAllFlashSale(req.query)
+        return res.status(200).json(listFlashSale)
+    } catch (error) {
+        next(error)
+    }
+}
 const getFlashSaleById = async(req,res,next) => {
     try {
         const {id} = req.params
@@ -80,5 +88,6 @@ module.exports = {
     deleteFlashSale,
     getFlashSaleItem,
     getFlashSaleItemById,
-    getActiveFlashSales
+    getActiveFlashSales,
+    getAllFlashSale
 }

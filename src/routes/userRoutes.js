@@ -16,6 +16,7 @@ router.put('/profile/avatar',uploadAvatar.uploadImageAvatar,user.updateAvatarUse
 
 //Admin
 router.get('/' ,authMiddleware.checkPermission(PERMISSIONS.VIEW_USERS),user.getUsers)
+router.post('/send-invitation',authMiddleware.checkPermission(PERMISSIONS.SEND_INVITATION),user.sendInvitationUser)
 router.post('/',[adminMiddleware.isAdmin],uploadAvatar.uploadImageAvatar,validateUser,user.createUser)
 router.delete('/:id',[adminMiddleware.isAdmin],user.deleteUser)
 

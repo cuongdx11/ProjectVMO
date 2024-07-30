@@ -6,6 +6,7 @@ const authValidate = require('../validations/authValidation')
 router.post('/register',authValidate.validateAuthRegister,authController.register)
 router.post('/login',authValidate.validateAuthLogin,authController.login)
 router.get('/verify-email', authController.verifyEmail);
+router.get('/verify-invitation',authController.verifyInvitationEmail)
 router.post('/forgot-password',authValidate.validateAuthForgotPass,authController.forgotPass)
 router.post('/reset-password',authController.resetPass)
 

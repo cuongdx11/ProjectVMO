@@ -103,6 +103,16 @@ const updateAvatarUser = async(req,res,next) => {
         next(error)
     }
 }
+
+const sendInvitationUser = async(req,res,next) => {
+    try {
+        const userData = req.body
+        const userRes = await userService.sendInvitationUser(userData)
+        res.status(200).json(userRes);
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     getUsers,
     getUserById,
@@ -112,7 +122,8 @@ module.exports = {
     deleteUser,
     getOrdersForUser,
     updateProfileUser,
-    updateAvatarUser
+    updateAvatarUser,
+    sendInvitationUser
     
     
 }

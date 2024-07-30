@@ -5,6 +5,7 @@ const PERMISSIONS = {
     VIEW_ITEMS: 'view_items',
     VIEW_ITEM: 'view_item',
     CREATE_ITEM: 'create_item',
+    CREATE_ITEM_EXCEL: 'create_item_excel', 
     UPDATE_ITEM: 'update_item',
     DELETE_ITEM: 'delete_item',
     //categories
@@ -13,6 +14,7 @@ const PERMISSIONS = {
     CREATE_CATEGORY: 'create_category',
     UPDATE_CATEGORY: 'update_category',
     DELETE_CATEGORY: 'delete_category',
+    CHANGE_POSITION: 'change_position',
     //orders
     VIEW_ORDERS: 'view_orders',
     VIEW_ORDER: 'view_order',
@@ -25,6 +27,7 @@ const PERMISSIONS = {
     CREATE_USER: 'create_user',
     UPDATE_USER: 'update_user',
     DELETE_USER: 'delete_user',
+    SEND_INVITATION: 'send-invitation',
     //roles
     VIEW_ROLES: 'view_roles',
     VIEW_ROLE: 'view_role',
@@ -53,8 +56,12 @@ const PERMISSIONS = {
     VIEW_USERS_PERMISSIONS: 'view_users_permissions',
     VIEW_USER_PERMISSION: 'view_user_permission',
     CREATE_USER_PERMISSION: 'create_user_permission',
-    
-    
+
+    //flash-sale
+    VIEW_FLASH_SALES: 'view_flash_sales',
+    CREATE_FLASH_SALE: 'create_flash_sale',
+    UPDATE_FLASH_SALE: 'update_flash_sale',
+    DELETE_FLASH_SALE: 'delete_flash_sale',
 }
 
 module.exports = PERMISSIONS

@@ -1,13 +1,13 @@
 const router = require('express').Router();
 const orderController = require('../controllers/orderController')
-const authMiddleware = require('../middlewares/authMiddleware')
+const {authenticateToken,checkPermission} = require('../middlewares/authMiddleware')
 const createPayUrl = require('../helpers/createPaymentUrl')
 const PERMISSIONS = require('../constants/permissions')
 const orderValidate = require('../validations/orderValidation')
 
 //User
-router.use(authMiddleware.authenticateToken)
-router.get('/',authMiddleware.checkPermission(PERMISSIONS.VIEW_ORDERS), orderController.getOrders)
+router.use(authenticateToken)
+router.get('/',checkPermission(PERMISSIONS.VIEW_ORDERS), orderController.getOrders)
 router.post('/',orderController.createOrder)
 router.post('/checkout',orderValidate,orderController.createOrder)
 router.get('/payment',orderController.payOrder)

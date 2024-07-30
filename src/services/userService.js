@@ -3,6 +3,14 @@ const ErrorRes = require("../helpers/ErrorRes");
 const Order = require("../models/orderModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const redisClient = require("../config/redisConfig");
+const Queue = require("bull");
+const { sequelize } = require('../config/dbConfig');
+const UserRole = require("../models/userRoleModel");
+const emailQueue = new Queue("email-queue", {
+  redis: redisClient,
+});
 require("dotenv").config();
 
 const getAllUser = async ({
@@ -88,6 +96,85 @@ const createUser = async (user) => {
     throw error;
   }
 };
+
+const createUserAdmin = async (userData) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const {fullName, email, roleId } = userData;
+    const generateUserName = (length) =>
+      Array.from(crypto.randomBytes(length))
+        .map(
+          (byte) =>
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[
+              byte % 61
+            ]
+        )
+        .join("");
+    const generatePassword = (length) =>
+      Array.from(crypto.randomBytes(length))
+        .map(
+          (byte) =>
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&"[
+              byte % 68
+            ]
+        )
+        .join("");
+    const userName = generateUserName(12);
+    const password = generatePassword(12);
+    const hashedPassword = await bcrypt.hash(password, parseInt(process.env.SALT, 10));
+    const newUser = await User.create({
+      username: userName,
+      email: email,
+      password: hashedPassword,
+      is_verified: true,
+      is_notification: true,
+      full_name: fullName
+    },{transaction});
+    await UserRole.create({
+      user_id: newUser.id,
+      role_id: roleId,
+    },{transaction})
+    
+    await transaction.commit();
+    await emailQueue.add('send-information', {
+      email: email,
+      password: password,
+      fullName: fullName
+    })
+    return {
+      status: "success",
+      message: "Tạo thành công",
+      newUser
+    };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+const sendInvitationUser = async(userData) => {
+  try {
+    const {email,fullName,roleId} = userData
+    const verificationToken = jwt.sign(
+      { email: email,fullName: fullName, roleId: roleId  },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: "3d", // Thời gian hết hạn của token
+      }
+    );
+    await emailQueue.add('invitation-email', {
+      email: email,
+      fullName: fullName,
+      roleId: roleId,
+      verificationToken: verificationToken,
+    })
+    return {
+      status: "success",
+      message: "Đã gủi lời mời tham gia"
+    };
+  } catch (error) {
+    throw error
+  }
+}
 const updateUser = async (id, userData) => {
   try {
     const user = await User.findByPk(id);
@@ -121,7 +208,15 @@ const deleteUser = async (id) => {
 };
 const getUserOrders = async (
   token,
-  { page = 1, pageSize = null,sortBy = null,filter = null,order = null ,search = null,...query }
+  {
+    page = 1,
+    pageSize = null,
+    sortBy = null,
+    filter = null,
+    order = null,
+    search = null,
+    ...query
+  }
 ) => {
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
@@ -133,26 +228,26 @@ const getUserOrders = async (
 
     const offset = page <= 1 ? 0 : page - 1;
     const limit = +pageSize || +process.env.LIMIT || 10;
-    const queries = { 
-        raw: false, 
-        nest: true,
-        limit :  limit,
-        offset : offset * limit,
+    const queries = {
+      raw: false,
+      nest: true,
+      limit: limit,
+      offset: offset * limit,
     }; // không lấy instance, lấy data từ bảng khác
     let sequelizeOrder = [];
     if (sortBy && order) {
-      const orderDirection = order.toUpperCase() || 'asc'
+      const orderDirection = order.toUpperCase() || "asc";
       sequelizeOrder.push([sortBy, orderDirection]);
       queries.order = sequelizeOrder;
     }
     if (search) query.name = { [Op.substring]: search };
-    const where = { user_id: userId,...query };
+    const where = { user_id: userId, ...query };
     if (filter && typeof filter === "object") {
-      Object.entries(filter).forEach(([key,value])=>{
-        if(value !== null && value !== undefined){
-          where[key] = value
+      Object.entries(filter).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          where[key] = value;
         }
-      })
+      });
     }
     const { count, rows } = await Order.findAndCountAll({
       where,
@@ -172,26 +267,33 @@ const getUserOrders = async (
     throw error;
   }
 };
-const getProfileUser = async(token) => {
+const getProfileUser = async (token) => {
   try {
-      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-      const userId = decoded.userId;
-      const user = await User.findOne({
-        where: { id: userId },
-        attributes: ['username','full_name','phone','email','avatar','is_verified']
-      })
-      if (!user) throw new ErrorRes(404, "Tài khoản không tồn tại")
-   
-      return {
-        status: "success",
-        message: "Lấy thông tin tài khoản thành công",
-        user: user
-      }
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const userId = decoded.userId;
+    const user = await User.findOne({
+      where: { id: userId },
+      attributes: [
+        "username",
+        "full_name",
+        "phone",
+        "email",
+        "avatar",
+        "is_verified",
+      ],
+    });
+    if (!user) throw new ErrorRes(404, "Tài khoản không tồn tại");
+
+    return {
+      status: "success",
+      message: "Lấy thông tin tài khoản thành công",
+      user: user,
+    };
   } catch (error) {
-    throw error
+    throw error;
   }
-}
-const updateProfileUser = async(token,profileData) => {
+};
+const updateProfileUser = async (token, profileData) => {
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const userId = decoded.userId;
@@ -199,37 +301,36 @@ const updateProfileUser = async(token,profileData) => {
     if (!user) {
       throw new ErrorRes(404, "Tài khoản không tồn tại");
     }
-    
-    await user.update(profileData)
+
+    await user.update(profileData);
     return {
       status: "success",
       message: "Cập nhật thông tin thành công",
-      user
-    }
-
+      user,
+    };
   } catch (error) {
-    throw error
+    throw error;
   }
-}
-const updateAvatarUser = async(token,avatar) => {
+};
+const updateAvatarUser = async (token, avatar) => {
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const userId = decoded.userId;
-    const user = await User.findByPk(userId)
+    const user = await User.findByPk(userId);
     if (!user) {
       throw new ErrorRes(404, "Tài khoản không tồn tại");
     }
     await user.update({
-      avatar
-    })
+      avatar,
+    });
     return {
       status: "success",
       message: "Cập nhật ảnh đại diện thành công",
-    }
+    };
   } catch (error) {
-    throw error
+    throw error;
   }
-}
+};
 
 module.exports = {
   getAllUser,
@@ -241,4 +342,6 @@ module.exports = {
   getUserOrders,
   updateProfileUser,
   updateAvatarUser,
+  createUserAdmin,
+  sendInvitationUser
 };

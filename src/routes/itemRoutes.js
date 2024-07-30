@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const itemController = require('../controllers/itemController')
-const authMiddleware = require('../middlewares/authMiddleware')
+const {authenticateToken,checkPermission} = require('../middlewares/authMiddleware')
 const adminMiddleware = require('../middlewares/adminMiddleware')
 const flashSaleItemMiddlewares = require('../middlewares/flashSaleItemMiddleware')
 const upload = require('../middlewares/uploadImageMiddleware')
@@ -10,13 +10,15 @@ const storage = multer.memoryStorage();
 const uploadExcel = multer({ storage: storage });
 //Public
 // router.get('/list',itemController.listItem)
-router.post('/upload-excel',uploadExcel.single('file'),itemController.createItemsFromExcel)
-
-router.get('/',itemController.listItemById)
 router.get('/:id',flashSaleItemMiddlewares.flashSaleItem,itemController.itemById)
+router.use(authenticateToken)
+router.post('/upload-excel',checkPermission(PERMISSIONS.CREATE_ITEM_EXCEL),uploadExcel.single('file'),itemController.createItemsFromExcel)
+
+router.get('/',checkPermission(PERMISSIONS.VIEW_ITEMS),itemController.listItemById)
+
 //Admin
-router.post('/',[authMiddleware.authenticateToken,authMiddleware.checkPermission(PERMISSIONS.CREATE_ITEM)],upload.uploadImageItem,itemController.createItem)
-router.put('/:id',upload.uploadImageItem,itemController.updateItem)
-router.delete('/:id',itemController.deleteItem)
+router.post('/',checkPermission(PERMISSIONS.CREATE_ITEM),upload.uploadImageItem,itemController.createItem)
+router.put('/:id',checkPermission(PERMISSIONS.UPDATE_ITEM),upload.uploadImageItem,itemController.updateItem)
+router.delete('/:id',checkPermission(PERMISSIONS.DELETE_ITEM),itemController.deleteItem)
 
 module.exports = router

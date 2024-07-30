@@ -9,6 +9,7 @@ router.get('/validate',voucherController.checkVoucher)
 router.get('/:id',voucherController.getVoucherById)
 
 //Admin
+router.get('/',voucherController.getAllVoucher)
 router.post('/',voucherValidate,voucherController.createVoucher)
 router.put('/:id',voucherController.updateVoucher)
 router.delete('/:id',voucherController.deleteVoucher)

@@ -82,6 +82,17 @@ const changePass = async(req,res,next) => {
         next(error)
     }
 }
+const verifyInvitationEmail = async(req,res,next) => {
+    try {
+        const {token}  = req.query
+        const resp = await authService.verifyInvitationEmail(token)
+        res.status(200).json(resp)
+    } catch (error) {
+        next(error)
+    }
+}
+
+
 module.exports = {
     register,
     login,
@@ -90,5 +101,6 @@ module.exports = {
     logout,
     forgotPass,
     resetPass,
-    changePass
+    changePass,
+    verifyInvitationEmail
 };

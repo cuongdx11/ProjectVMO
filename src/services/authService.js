@@ -7,6 +7,7 @@ const ErrorRes = require('../helpers/ErrorRes')
 const { Op } = require('sequelize');
 require('dotenv').config()
 const redisClient = require('../config/redisConfig');
+const userService = require('../services/userService')
 const Queue = require('bull');
 const emailQueue = new Queue('email-queue', {
     redis: redisClient
@@ -221,6 +222,15 @@ const refreshToken = async(refreshToken) => {
         throw error;
     }
 }
+const verifyInvitationEmail = async(token) => {
+    try {
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const user = await userService.createUserAdmin(decoded)
+        return user;
+    } catch (error) {
+        throw error
+    }
+}
 module.exports = {
     register,
     login,
@@ -229,5 +239,6 @@ module.exports = {
     forgetPass,
     resetPass,
     changePass,
-    logout
+    logout,
+    verifyInvitationEmail
 };
