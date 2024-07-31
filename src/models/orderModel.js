@@ -60,7 +60,7 @@ const Order = sequelize.define('Order', {
         defaultValue: DataTypes.NOW
     },
     status: {
-        type: DataTypes.ENUM('pending', 'completed', 'cancelled'),
+        type: DataTypes.ENUM('pending', 'confirmed', 'processing', 'completed', 'cancelled'),
         defaultValue: 'pending'
     },
     payment_status: {
@@ -89,6 +89,7 @@ Order.belongsTo(User, { as: 'user' ,foreignKey: 'user_id' });
 // Order.belongsTo(Voucher, { foreignKey: 'voucher_id' });
 Order.belongsTo(ShippingAddress, {as:'address_ship', foreignKey: 'shipping_address_id' });
 Order.belongsTo(Payment, {as:'payment', foreignKey: 'payment_id' });
+Order.belongsTo(Shipment,{as: 'shipment' , foreignKey: 'shipment_id'})
 Order.hasMany(OrderItem,{as: 'order_items',foreignKey: 'order_id'})
 
 // Thiết lập quan hệ giữa OrderItem và Order, Item

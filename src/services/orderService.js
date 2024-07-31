@@ -14,8 +14,7 @@ const OrderDiscount = require('../models/orderDiscountModel')
 const {validateCheckoutData} = require('../helpers/validateCheckoutData')
 const {calculateShippingCost} = require('../helpers/calculateShippingCost')
 const {createPaymentUrlOrder} = require('../helpers/createPaymentUrlOrder')
-const {sendOrderConfirmationEmail} = require('../helpers/sendOrderConfirmationEmail')
-const {createNotification} = require('../services/notificationService');
+const {OrderStatus,PaymentStatus,ShipmentStatus,PaymentMethodCT} = require('../constants/order')
 const redisClient = require('../config/redisConfig');
 const User = require("../models/userModel");
 const Queue = require('bull');
@@ -257,6 +256,11 @@ const getOrderById = async(id) => {
               attributes: ['name', 'description']
             }
           ]
+        },
+        {
+          model: Shipment,
+          as: 'shipment',
+          attributes: ['tracking_number','status']
         }
       ],
     })
@@ -576,9 +580,7 @@ const createOrder = async(orderData) =>{
     if(voucher_code){
       await createOrderDiscount(order.id,voucher_code,discount,transaction);
     }
-    // const userBuy = await User.findByPk(userId)
-    // await createNotification(`Đơn hàng ${order.id} được mua bởi khách hàng ${userBuy.full_name}`,'NEW_ORDER')
-    // const notificationMessage = `Đơn hàng ${order.id} được mua bởi khách hàng ${userBuy.full_name}`;
+
     await redisClient.publish('notifications',JSON.stringify({
       type: 'NEW_ORDER',
       message: 'Thanh cong',
@@ -586,11 +588,12 @@ const createOrder = async(orderData) =>{
       userId : userId
 
     }))
+
     await emailQueue.add('order-confirmation', {
       orderId: order.id,
       items: updatedItems,
       shippingCost: shippingCost
-  });
+    });
     await transaction.commit();
    
     if (paymentMethodId === 2) {
@@ -606,6 +609,99 @@ const createOrder = async(orderData) =>{
   }
 }
 
+const updateStatusOrder = async (orderId, newStatus) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const order = await Order.findByPk(orderId, {
+      include: { model: Payment, as: 'payment' },
+      transaction
+    });
+
+    if (!order) {
+      throw new ErrorRes(404, 'Không có đơn hàng');
+    }
+
+    if (order.status !== newStatus) {
+      await order.update({ status: newStatus }, { transaction });
+
+      if (newStatus === OrderStatus.CONFIRMED) {
+        await handleConfirmedOrder(order, transaction);
+      } 
+    }
+
+    await transaction.commit();
+    return { message: 'Cập nhật thành công trạng thái đơn hàng' };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
+const updateStatusShipment = async (orderId, newStatus) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const order = await Order.findByPk(orderId, {
+      include: { model: Shipment, as: 'shipment' },
+      transaction
+    });
+
+    if (!order) {
+      throw new ErrorRes(404, 'Không có đơn hàng');
+    }
+
+    const shipment = order.shipment;
+
+    if (!shipment) {
+      throw new ErrorRes(404, 'Không có giao hàng');
+    }
+
+    if (shipment.status !== newStatus) {
+      await shipment.update({ status: newStatus }, { transaction });
+
+      if (newStatus === ShipmentStatus.SHIPPED) {
+        await updateStatusOrder(orderId, OrderStatus.PROCESSING, transaction);
+      }
+      if (newStatus === ShipmentStatus.DELIVERED) {
+        await handleDeliveredShipment(order, transaction);
+      }
+    }
+
+    await transaction.commit();
+    return { message: 'Cập nhật thành công trạng thái giao hàng' };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
+const handleConfirmedOrder = async (order, transaction) => {
+  const payment = await Payment.findByPk(order.payment_id, { transaction });
+
+  if (!payment) {
+    throw new ErrorRes(404, 'Không có thanh toán');
+  }
+
+  if (payment.payment_method_id === PaymentMethodCT.COD ||
+    (payment.payment_method_id === PaymentMethodCT.VN_PAY && payment.status === PaymentStatus.COMPLETED)) {
+    await updateStatusShipment(order.id, ShipmentStatus.PROCESSING);
+  } else if (payment.payment_method_id === PaymentMethodCT.VN_PAY && payment.status === PaymentStatus.PENDING) {
+    throw new ErrorRes(404, 'Khách hàng chưa thanh toán');
+  }
+};
+
+
+const handleDeliveredShipment = async (order, transaction) => {
+  const payment = await Payment.findByPk(order.payment_id, { transaction });
+
+  if (payment && payment.payment_method_id === PaymentMethodCT.COD) {
+    payment.status = PaymentStatus.COMPLETED;
+    await payment.save({ transaction });
+  }
+
+  await updateStatusOrder(order.id, OrderStatus.COMPLETED, transaction);
+};
+
+
 module.exports = {
   createOrder,
   getOrderById,
@@ -614,6 +710,8 @@ module.exports = {
   cancelOrder,
   payOrder,
   applyVoucher,
-  getOrders
+  getOrders,
+  updateStatusOrder,
+  updateStatusShipment
 
 };

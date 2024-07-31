@@ -74,15 +74,28 @@ const applyVoucher = async(req,res,next) => {
         next(error)
     }
 }
-// const checkOut = async(req,res,next) => {
-//     try {
-//         const orderData = req.body
-//         const checkOut = await orderService.checkOut(orderData)
-//         res.status(200).json(checkOut)
-//     } catch (error) {
-//         next(error)
-//     }
-// }
+
+const updateStatusOrder = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const {newStatus} = req.body
+        const updateStatusOrder = await orderService.updateStatusOrder(id,newStatus)
+        res.status(200).json(updateStatusOrder)
+    } catch (error) {
+        next(error)
+    }
+}
+const updateStatusShipment = async(req,res,next) => {
+    try {
+        const {id} = req.params
+        const {newStatus} = req.body
+        const updateStatusShipment = await orderService.updateStatusShipment(id,newStatus)
+        res.status(200).json(updateStatusShipment)
+    } catch (error) {
+        next(error)
+    }
+}
+
 module.exports = {
     createOrder,
     getOrderById,
@@ -91,5 +104,8 @@ module.exports = {
     cancelledOrder,
     payOrder,
     applyVoucher,
-    getOrders
+    getOrders,
+    updateStatusOrder,
+    updateStatusShipment
+
 }

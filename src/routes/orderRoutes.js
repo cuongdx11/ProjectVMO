@@ -18,5 +18,7 @@ router.post('/apply-voucher',orderController.applyVoucher)
 //Admin
 router.put('/:id',orderController.updateOrder)
 router.delete('/:id',orderController.deleteOrder)
+router.put('/:id/status',orderController.updateStatusOrder)
+router.put('/:id/ship',orderController.updateStatusShipment)
 
 module.exports = router
