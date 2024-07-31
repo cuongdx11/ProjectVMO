@@ -582,8 +582,8 @@ const createOrder = async(orderData) =>{
     }
 
     await redisClient.publish('notifications',JSON.stringify({
-      type: 'NEW_ORDER',
-      message: 'Thanh cong',
+      type: 'ORDER',
+      message: `Đơn hàng ${order.id} được mua bởi khách hàng `,
       related_id: order.id,
       userId : userId
 
@@ -626,6 +626,12 @@ const updateStatusOrder = async (orderId, newStatus) => {
 
       if (newStatus === OrderStatus.CONFIRMED) {
         await handleConfirmedOrder(order, transaction);
+        await redisClient.publish('userNotifications',JSON.stringify({
+          type: 'ORDER',
+          content: `Đơn hàng ${order.id} của bạn đã được xác nhận `,
+          userId : order.user_id
+    
+        }))
       } 
     }
 
@@ -660,9 +666,21 @@ const updateStatusShipment = async (orderId, newStatus) => {
 
       if (newStatus === ShipmentStatus.SHIPPED) {
         await updateStatusOrder(orderId, OrderStatus.PROCESSING, transaction);
+        await redisClient.publish('userNotifications',JSON.stringify({
+          type: 'ORDER',
+          content: `Đơn hàng ${order.id} của bạn đang được giao tới bạn`,
+          userId : order.user_id
+    
+        }))
       }
       if (newStatus === ShipmentStatus.DELIVERED) {
         await handleDeliveredShipment(order, transaction);
+        await redisClient.publish('userNotifications',JSON.stringify({
+          type: 'ORDER',
+          content: `Đơn hàng ${order.id} của bạn được giao thành công`,
+          userId : order.user_id
+    
+        }))
       }
     }
 
@@ -685,10 +703,9 @@ const handleConfirmedOrder = async (order, transaction) => {
     (payment.payment_method_id === PaymentMethodCT.VN_PAY && payment.status === PaymentStatus.COMPLETED)) {
     await updateStatusShipment(order.id, ShipmentStatus.PROCESSING);
   } else if (payment.payment_method_id === PaymentMethodCT.VN_PAY && payment.status === PaymentStatus.PENDING) {
-    throw new ErrorRes(404, 'Khách hàng chưa thanh toán');
+    throw new ErrorRes(400, 'Khách hàng chưa thanh toán');
   }
 };
-
 
 const handleDeliveredShipment = async (order, transaction) => {
   const payment = await Payment.findByPk(order.payment_id, { transaction });

@@ -8,6 +8,7 @@ const redisClient = require("../config/redisConfig");
 const Queue = require("bull");
 const { sequelize } = require('../config/dbConfig');
 const UserRole = require("../models/userRoleModel");
+const UserNotifications = require('../models/userNotifications')
 const emailQueue = new Queue("email-queue", {
   redis: redisClient,
 });
@@ -331,7 +332,24 @@ const updateAvatarUser = async (token, avatar) => {
     throw error;
   }
 };
-
+const getUserNotifications = async(id) => {
+  try {
+    const {count,rows} = await UserNotifications.findAndCountAll({
+      where: {
+        user_id: id
+      }
+    })
+    return {
+      status: "success",
+      message: "Lấy thông báo thành công",
+      total: count,
+      notifications: rows
+    }
+    
+  } catch (error) {
+    throw error
+  }
+}
 module.exports = {
   getAllUser,
   getUserById,
@@ -343,5 +361,6 @@ module.exports = {
   updateProfileUser,
   updateAvatarUser,
   createUserAdmin,
-  sendInvitationUser
+  sendInvitationUser,
+  getUserNotifications
 };

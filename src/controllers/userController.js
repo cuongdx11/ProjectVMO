@@ -113,6 +113,15 @@ const sendInvitationUser = async(req,res,next) => {
         next(error)
     }
 }
+const getUserNotifications = async(req,res,next) => {
+    try {
+        const user = req.user
+        const notifications = await userService.getUserNotifications(user.userId)
+        res.status(200).json(notifications);
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     getUsers,
     getUserById,
@@ -123,7 +132,8 @@ module.exports = {
     getOrdersForUser,
     updateProfileUser,
     updateAvatarUser,
-    sendInvitationUser
+    sendInvitationUser,
+    getUserNotifications
     
     
 }
