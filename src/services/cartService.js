@@ -87,8 +87,46 @@ const getCartByUser = async(id) => {
         throw error
     }
 }
+
+const deleteCart = async(id) => {
+    try {
+        const cart = await Cart.findOne({
+            where: { user_id: id, status: 'active' },
+        })
+        await CartItem.destroy({
+            where: { cart_id: cart.id }
+        })
+        await cart.destroy()
+        return {
+            message: 'Xóa giỏ hàng thành công'
+        }
+    } catch (error) {
+        throw error
+    }
+}
+const deleteItemCart = async(id,itemId) => {
+    try {
+        const cart = await Cart.findOne({
+            where: { user_id: id, status: 'active' },
+        })
+        const cartItem = await CartItem.findOne({
+            where: { 
+                cart_id: cart.id,
+                item_id: itemId 
+        }
+       })
+       cartItem.destroy()
+       return {
+        message: 'Xóa sản phẩm thành công'
+       }
+    } catch (error) {
+        throw error
+    }
+}
 module.exports = {
     createCart,
     transferGuestCartToUserCart,
-    getCartByUser
+    getCartByUser,
+    deleteCart,
+    deleteItemCart
 }
