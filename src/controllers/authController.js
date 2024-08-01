@@ -22,11 +22,10 @@ const login = async (req, res,next) => {
     }
 };
 const logout = async(req,res,next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Lấy token sau 'Bearer'
     try {
-       const resp = await authService.logout(token)
-       res.status(200).json(resp)
+        const user = req.user
+        const resp = await authService.logout(user.userId)
+        res.status(200).json(resp)
     } catch (error) {
         next(error)
     }
@@ -73,10 +72,9 @@ const resetPass = async(req,res,next)  => {
 }
 const changePass = async(req,res,next) => {
     try {
-        const authHeader = req.headers['authorization'];
-        const accessToken = authHeader && authHeader.split(' ')[1];
+        const user = req.user
         const {newPass,oldPass} = req.body
-        const resp = await authService.changePass(accessToken,oldPass,newPass)
+        const resp = await authService.changePass(user.userId,oldPass,newPass)
         res.status(200).json(resp)
     } catch (error) {
         next(error)

@@ -208,7 +208,7 @@ const deleteUser = async (id) => {
   }
 };
 const getUserOrders = async (
-  token,
+  id,
   {
     page = 1,
     pageSize = null,
@@ -220,9 +220,7 @@ const getUserOrders = async (
   }
 ) => {
   try {
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const userId = decoded.userId;
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(id);
     if (!user) {
       throw new ErrorRes(404, "Tài khoản không tồn tại");
     }
@@ -242,7 +240,7 @@ const getUserOrders = async (
       queries.order = sequelizeOrder;
     }
     if (search) query.name = { [Op.substring]: search };
-    const where = { user_id: userId, ...query };
+    const where = { user_id: id, ...query };
     if (filter && typeof filter === "object") {
       Object.entries(filter).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
@@ -268,12 +266,11 @@ const getUserOrders = async (
     throw error;
   }
 };
-const getProfileUser = async (token) => {
+const getProfileUser = async (id) => {
   try {
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const userId = decoded.userId;
+   
     const user = await User.findOne({
-      where: { id: userId },
+      where: { id: id },
       attributes: [
         "username",
         "full_name",
@@ -294,11 +291,9 @@ const getProfileUser = async (token) => {
     throw error;
   }
 };
-const updateProfileUser = async (token, profileData) => {
+const updateProfileUser = async (id, profileData) => {
   try {
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const userId = decoded.userId;
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(id);
     if (!user) {
       throw new ErrorRes(404, "Tài khoản không tồn tại");
     }
@@ -313,11 +308,9 @@ const updateProfileUser = async (token, profileData) => {
     throw error;
   }
 };
-const updateAvatarUser = async (token, avatar) => {
+const updateAvatarUser = async (id, avatar) => {
   try {
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const userId = decoded.userId;
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(id);
     if (!user) {
       throw new ErrorRes(404, "Tài khoản không tồn tại");
     }
@@ -350,6 +343,25 @@ const getUserNotifications = async(id) => {
     throw error
   }
 }
+const maskAsRead = async(id) => {
+  try {
+    await UserNotifications.update(
+      {is_read: true},
+      {
+        where: {
+          user_id: id,
+          is_read: false
+        }
+      }
+    )
+    return {
+      status: "success",
+      message: "Đã đánh dấu đọc tất cả các thông báo"
+    }
+  } catch (error) {
+    
+  }
+}
 module.exports = {
   getAllUser,
   getUserById,
@@ -362,5 +374,6 @@ module.exports = {
   updateAvatarUser,
   createUserAdmin,
   sendInvitationUser,
-  getUserNotifications
+  getUserNotifications,
+  maskAsRead
 };

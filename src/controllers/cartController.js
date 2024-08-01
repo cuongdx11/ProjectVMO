@@ -2,12 +2,11 @@ const cartService = require('../services/cartService')
 
 const createCart = async(req,res,next) => {
     try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1]; 
+        const user = req.user
         
         const cartData = req.body
-        if(token){
-            cartData.token = token
+        if(user){
+            cartData.userId = user.userId
         }
         const session_id = req.sessionID
         cartData.session_id = session_id;
@@ -24,9 +23,8 @@ const createCart = async(req,res,next) => {
 
 const getCartByUser = async(req,res,next) => {
     try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1]; 
-        const cart = await cartService.getCartByUser(token)
+        const user = req.user
+        const cart = await cartService.getCartByUser(user.userId)
         res.status(200).json({
             status: 'success',
             message : 'Lấy giỏ hàng thành công',

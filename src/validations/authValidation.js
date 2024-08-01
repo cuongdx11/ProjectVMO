@@ -2,21 +2,21 @@ const Joi = require('joi');
 
 const authChangePassSchema = Joi.object({
     newPass: Joi.string()
-        .min(8)
+        .min(6)
         .required()
         .messages({
             'string.base': 'Mật khẩu mới phải là một chuỗi ký tự',
             'string.empty': 'Mật khẩu mới không được để trống',
-            'string.min': 'Mật khẩu mới phải có ít nhất {#limit} ký tự',
+            'string.min': 'Mật khẩu mới phải có ít nhất 6 ký tự',
             'any.required': 'Mật khẩu mới là bắt buộc'
         }),
     oldPass: Joi.string()
-        .min(8)
+        .min(6)
         .required()
         .messages({
             'string.base': 'Mật khẩu cũ phải là một chuỗi ký tự',
             'string.empty': 'Mật khẩu cũ không được để trống',
-            'string.min': 'Mật khẩu cũ phải có ít nhất {#limit} ký tự',
+            'string.min': 'Mật khẩu cũ phải có ít nhất 6 ký tự',
             'any.required': 'Mật khẩu cũ là bắt buộc'
         })
 }).custom((value, helpers) => {

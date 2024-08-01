@@ -14,6 +14,7 @@ router.get('/profile',user.getProfileUser)
 router.put('/profile',user.updateProfileUser)
 router.put('/profile/avatar',uploadAvatar.uploadImageAvatar,user.updateAvatarUser)
 router.get('/notifications',user.getUserNotifications)
+router.get('/mask',user.maskAsRead)
 
 //Admin
 router.get('/' ,authMiddleware.checkPermission(PERMISSIONS.VIEW_USERS),user.getUsers)

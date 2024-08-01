@@ -7,15 +7,11 @@ const createCart = async (cartData) => {
     try {
         let cart
         let user_id
-        const {items, token, session_id} = cartData;
-        if(token){
-            const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-            user_id = decoded.userId
-        }
-        if (user_id) {
+        const {items, userId, session_id} = cartData;
+        if (userId) {
             // Đối với người dùng đã đăng nhập
             [cart] = await Cart.findOrCreate({
-                where: { user_id, status: 'active' },
+                where: { user_id: userId, status: 'active' },
                 defaults: { total_amount: 0 },
                 transaction
             });
@@ -79,12 +75,12 @@ const transferGuestCartToUserCart = async (user_id, session_id) => {
     }
 }
 
-const getCartByUser = async(token) => {
+const getCartByUser = async(id) => {
     try {
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        const user_id = decoded.userId
+        
         const cart = await Cart.findOne({
-            where: { user_id, status: 'active' }
+            where: { user_id: id, status: 'active' },
+            include: [{ model: CartItem, as: 'cartItem' }]
         })
         return cart;
     } catch (error) {

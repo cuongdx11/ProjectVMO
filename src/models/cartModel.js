@@ -21,15 +21,6 @@ const Cart = sequelize.define('Cart', {
         type: DataTypes.STRING(255),
         allowNull: true,
     },
-    voucher_id: {
-        type: DataTypes.INTEGER,
-        references: {
-            model: 'Vouchers', 
-            key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL', 
-    },
     total_amount: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
@@ -54,6 +45,6 @@ const Cart = sequelize.define('Cart', {
 
 // Định nghĩa các quan hệ
 Cart.belongsTo(User, { foreignKey: 'user_id' });
-Cart.belongsTo(Voucher, { foreignKey: 'voucher_id' });
+
 
 module.exports = Cart;

@@ -92,11 +92,9 @@ const login = async (email, password) => {
         throw error;
     }
 };
-const logout = async(accessToken) => {
+const logout = async(id) => {
     try {
-        // const decode
-        const decode = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-        const user = await User.findOne({ where: { id: decode.userId } });
+        const user = await User.findByPk(id)
         if (!user) {
             // throw new Error('User not found')
             throw new ErrorRes(404, 'Tài khoản không tồn tại')
@@ -158,10 +156,9 @@ const resetPass = async(newPass,token) => {
     }
 }
 
-const changePass = async(accessToken,oldPass,newPass) => {
+const changePass = async(id,oldPass,newPass) => {
     try {
-        const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-        const user = await User.findByPk(decoded.userId);
+        const user = await User.findByPk(id);
         if (!user) {
             // throw new Error('User not found');
             throw new ErrorRes(404, 'Tài khoản không tồn tại')

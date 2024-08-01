@@ -59,10 +59,8 @@ const deleteUser = async(req , res,next) => {
 }
 const getOrdersForUser = async (req, res, next) => {
     try {
-        // const { userId } = req.params;
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1]; // Lấy token sau 'Bearer'
-        const result = await userService.getUserOrders(token, req.query);
+        const user = req.user
+        const result = await userService.getUserOrders(user.userId, req.query);
         res.status(200).json(result);
     } catch (error) {
         next(error);
@@ -70,10 +68,9 @@ const getOrdersForUser = async (req, res, next) => {
 }
 const getProfileUser = async(req,res,next) => {
     try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1]; 
-        const user = await userService.getProfileUser(token)
-        res.status(200).json(user);
+        const user = req.user
+        const profileUser = await userService.getProfileUser(user.userId)
+        res.status(200).json(profileUser);
     } catch (error) {
         next(error)
     }
@@ -81,11 +78,10 @@ const getProfileUser = async(req,res,next) => {
 const updateProfileUser = async(req,res,next) => {
     try {
 
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1]; 
+        const user = req.user 
         const profileData = req.body
-        const user = await userService.updateProfileUser(token,profileData)
-        res.status(200).json(user);
+        const profileUser = await userService.updateProfileUser(user.userId,profileData)
+        res.status(200).json(profileUser);
     } catch (error) {
         next(error)
     }
@@ -94,11 +90,10 @@ const updateProfileUser = async(req,res,next) => {
 const updateAvatarUser = async(req,res,next) => {
     try {
         const file = req.file
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1]; 
+        const user = req.user
         const avatar = file.path
-        const user = await userService.updateAvatarUser(token,avatar)
-        res.status(200).json(user);
+        const avatarUser = await userService.updateAvatarUser(user.userId,avatar)
+        res.status(200).json(avatarUser);
     } catch (error) {
         next(error)
     }
@@ -122,6 +117,15 @@ const getUserNotifications = async(req,res,next) => {
         next(error)
     }
 }
+const maskAsRead = async(req,res,next) => {
+    try {
+        const user = req.user
+        const mask = await userService.maskAsRead(user.userId)
+        res.status(200).json(mask);
+    } catch (error) {
+        next(error)
+    }
+}
 module.exports = {
     getUsers,
     getUserById,
@@ -133,7 +137,8 @@ module.exports = {
     updateProfileUser,
     updateAvatarUser,
     sendInvitationUser,
-    getUserNotifications
+    getUserNotifications,
+    maskAsRead
     
     
 }
