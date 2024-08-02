@@ -71,7 +71,7 @@ const getOrders = async({
         {
           model: Payment,
           as: 'payment',
-          attributes: ['status']
+          attributes: ['id','status']
         }
       ]
     })
@@ -83,7 +83,7 @@ const getOrders = async({
       currentPage: +page,
     };
   } catch (error) {
-    
+    throw error
   }
 }
 // const createOrder = async (user_id, items, voucher_code) => {
@@ -242,7 +242,7 @@ const getOrderById = async(id) => {
         },
         {
           model: ShippingAddress,
-          as: 'address_ship',
+          as: 'shipAddress',
           attributes: ['receiver_name','phone_number','address_detail','ward','district','province','country']
         },
         {
@@ -362,7 +362,7 @@ const payOrder = async(id,code,tran_code) => {
    
     return {
       status : 'success',
-      message: 'Thanh toán đơn hàng thành công'
+      message: 'Thanh toán đơn hàng thành công',
     }
   } catch (error) {
     throw error
@@ -479,8 +479,9 @@ const applyDiscount = async (voucherCode, subtotal, transaction) => {
   return discount;
 };
 
-const createPayment = async (paymentMethodId, amount, transaction) => {
+const createPayment = async (orderId,paymentMethodId, amount, transaction) => {
   return Payment.create({
+    order_id: orderId,
     payment_method_id: paymentMethodId,
     amount,
     currency: 'VND',
@@ -489,6 +490,7 @@ const createPayment = async (paymentMethodId, amount, transaction) => {
 };
 const createShippingAddress = async (orderData, transaction) => {
   return ShippingAddress.create({
+    order_id: orderData.orderId,
     receiver_name: orderData.full_name,
     phone_number: orderData.phone_number,
     address_detail: orderData.address,
@@ -499,8 +501,9 @@ const createShippingAddress = async (orderData, transaction) => {
   }, { transaction });
 };
 
-const createShipment = async (shippingMethodId, shippingCost,trackingNumber, transaction) => {
+const createShipment = async (orderId,shippingMethodId, shippingCost,trackingNumber, transaction) => {
   return Shipment.create({
+    order_id: orderId,
     shipping_method_id: shippingMethodId,
     shipping_cost: shippingCost,
     tracking_number: trackingNumber,
@@ -508,12 +511,9 @@ const createShipment = async (shippingMethodId, shippingCost,trackingNumber, tra
   }, { transaction });
 };
 
-const createOrderCheckOut = async (userId, shippingAddressId, paymentId, shipmentId, subtotal, totalAmount, discount, notes, transaction) => {
+const createOrderCheckOut = async (userId, subtotal, totalAmount, discount, notes, transaction) => {
   return Order.create({
     user_id: userId,
-    shipping_address_id: shippingAddressId,
-    payment_id: paymentId,
-    shipment_id: shipmentId,
     subtotal,
     total_amount: totalAmount,
     discount,
@@ -561,7 +561,7 @@ const createOrder = async(orderData) =>{
     const { items, userId, voucher_code, notes, paymentMethodId, shippingMethodId,shippingCost } = orderData;
 
     const [subtotal, updatedItems] = await calculateSubtotalAndUpdateStock(items, transaction);
-    const shippingAddress = await createShippingAddress(orderData, transaction);
+    
     // const shippingCost = await calculateShippingCost(shippingAddress);
     let discount = 0
     if(voucher_code) {
@@ -570,11 +570,13 @@ const createOrder = async(orderData) =>{
     
 
     const totalAmount = subtotal + shippingCost - discount;
-
-    const payment = await createPayment(paymentMethodId, totalAmount, transaction);
+    const order = await createOrderCheckOut(userId,subtotal, totalAmount, discount, notes, transaction);
+    orderData.orderId = order.id
+    const shippingAddress = await createShippingAddress(orderData, transaction);
+    const payment = await createPayment(order.id,paymentMethodId, totalAmount, transaction);
     const trackingNumber = 'VMO'+ payment.id
-    const shipment = await createShipment(shippingMethodId, shippingCost,trackingNumber, transaction);
-    const order = await createOrderCheckOut(userId, shippingAddress.id, payment.id, shipment.id, subtotal, totalAmount, discount, notes, transaction);
+    const shipment = await createShipment(order.id,shippingMethodId, shippingCost,trackingNumber, transaction);
+    
 
     await createOrderItems(order.id, updatedItems, transaction);
     if(voucher_code){

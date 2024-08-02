@@ -8,6 +8,10 @@ const Shipment = sequelize.define('Shipment', {
         autoIncrement: true,
         primaryKey: true
     },
+    order_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
     shipping_method_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
@@ -58,6 +62,6 @@ const Shipment = sequelize.define('Shipment', {
 });
 
 // Thiết lập quan hệ
-Shipment.belongsTo(ShippingMethod, { foreignKey: 'shipping_method_id' });
+// Shipment.belongsTo(ShippingMethod, { foreignKey: 'shipping_method_id' });
 
 module.exports = Shipment;

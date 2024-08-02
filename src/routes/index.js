@@ -12,6 +12,8 @@ const notification = require('./notificationRoutes')
 const permission = require('./permissionRoutes')
 const userRole = require('./userRoleRoutes')
 const rolePermission = require('./rolePermissionRoutes')
+const payment = require('./paymentRoutes')
+const shipment = require('./shipmentRoutes')
 const errorHandling = require('../middlewares/errorHandlingMiddleware')
 const intRoutes = (app) =>{
 
@@ -29,6 +31,8 @@ const intRoutes = (app) =>{
     app.use('/api/v1/notifications',notification)
     app.use('/api/v1/user-role',userRole)
     app.use('/api/v1/role-permission',rolePermission)
+    app.use('/api/v1/payment',payment)
+    app.use('/api/v1/shipment',shipment)
     app.use(errorHandling)
 
     

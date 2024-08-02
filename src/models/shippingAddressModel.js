@@ -1,12 +1,15 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/dbConfig'); 
 
-
 const ShippingAddress = sequelize.define('ShippingAddress', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
+    },
+    order_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
     receiver_name: {
         type: DataTypes.STRING(100),
@@ -48,7 +51,5 @@ const ShippingAddress = sequelize.define('ShippingAddress', {
     tableName: 'ShippingAddress',
     timestamps: false 
 });
-
-
 
 module.exports = ShippingAddress;

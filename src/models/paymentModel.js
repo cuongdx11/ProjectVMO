@@ -1,12 +1,21 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/dbConfig');
-const PaymentMethod = require('./paymentMethodModel'); 
+const PaymentMethod = require('./paymentMethodModel');
+const Order = require('./orderModel');
 
 const Payment = sequelize.define('Payment', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
+    },
+    order_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Orders',
+            key: 'id'
+        }
     },
     payment_method_id: {
         type: DataTypes.INTEGER,
@@ -46,5 +55,9 @@ const Payment = sequelize.define('Payment', {
     timestamps: false,
     tableName: 'Payments'
 });
-Payment.belongsTo(PaymentMethod, {as:'payment_method', foreignKey: 'payment_method_id' });
+
+Payment.belongsTo(PaymentMethod, {as: 'payment_method', foreignKey: 'payment_method_id'});
+
+
+
 module.exports = Payment;
