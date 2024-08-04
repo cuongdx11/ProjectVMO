@@ -1,10 +1,16 @@
 const Permission = require('../models/permissionModel')
 const { sequelize } = require('../config/dbConfig');
 const ErrorRes = require('../helpers/ErrorRes');
+const RolePermission = require('../models/rolePermissionModel');
+const {ROLE} = require('../constants/role')
 const createPermission = async(permissionData) => {
     const transaction = await sequelize.transaction()
     try {
         const permission = await Permission.create(permissionData,{transaction})
+        await RolePermission.create({
+            role_id: ROLE.ADMIN,
+            permission_id: permission.id
+        },{transaction})
         await transaction.commit()
         return permission
     } catch (error) {
@@ -54,7 +60,7 @@ const getAllPermission = async({
         });
         return {
             status: "success",
-            items: rows,
+            permissions: rows,
             total: count,
             totalPages: Math.ceil(count / limit),
             currentPage: +page,

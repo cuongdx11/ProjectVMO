@@ -46,7 +46,7 @@ const getPaymentMethod = async ({
     return {
         status: 'success',
         total: count,
-        items: rows,
+        payments: rows,
         totalPages: Math.ceil(count / limit),
         currentPage: +page,
       };
@@ -54,6 +54,20 @@ const getPaymentMethod = async ({
     throw error
   }
 };
+const getPaymentMethodById = async(id) => {
+  try {
+    const paymentMethod = await PaymentMethod.findByPk(id)
+    if(!paymentMethod) {
+      throw new ErrorRes(404,'Phương thức thanh toán không tồn tại')
+    }
+    return {
+      status: 'success',
+      paymentMethod
+    }
+  } catch (error) {
+    throw error
+  }
+}
 const createPaymentMethod = async (paymentMethodData) => {
   try {
     const transaction = await sequelize.transaction();
@@ -240,5 +254,7 @@ module.exports = {
   getPaymentById,
   updatePayment,
   deletePayment,
-  createPayment
+  createPayment,
+  getPaymentById,
+  getPaymentMethodById
 };

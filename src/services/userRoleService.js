@@ -2,6 +2,7 @@ const ErrorRes = require("../helpers/ErrorRes");
 const UserRole = require("../models/userRoleModel");
 const User = require('../models/userModel')
 const Role = require('../models/roleModel')
+
 const getUserRoles = async ({
   page = 1,
   sortBy = null,
@@ -44,7 +45,7 @@ const getUserRoles = async ({
     });
     return {
         status: "success",
-        items: rows,
+        userRoles: rows,
         total: count,
         totalPages: Math.ceil(count / limit),
         currentPage: +page,
@@ -127,6 +128,7 @@ const deleteUserRole = async(userId) => {
     throw error
   }
 }
+
 module.exports = {
   getUserRoles,
   getUserRoleByUserId,

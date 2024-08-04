@@ -1,18 +1,22 @@
 const router = require('express').Router();
+const PERMISSIONS = require('../constants/permissions');
 const paymentController = require('../controllers/paymentController')
 const {authenticateToken,checkPermission} = require('../middlewares/authMiddleware')
 
-
-router.get('/',paymentController.getAllPayment)
-router.get('/:id',paymentController.getPaymentById)
-router.post('/',paymentController.createPayment)
-router.put('/:id',paymentController.updatePayment)
-router.delete('/:id',paymentController.deletePayment)
 router.use(authenticateToken)
-router.post('/method',paymentController.createPaymentMethod)
-router.put('/method/:id',paymentController.updatePaymentMethod)
-router.delete('/method',paymentController.deletePaymentMethod)
-router.get('/method',paymentController.getPaymentMethod)
-router.get('/VNPay',paymentController.paymentVNPay)
+
+router.get('/',checkPermission(PERMISSIONS.VIEW_PAYMENTS),paymentController.getAllPayment)
+router.get('/:id',checkPermission(PERMISSIONS.VIEW_PAYMENT),paymentController.getPaymentById)
+router.post('/',checkPermission(PERMISSIONS.CREATE_PAYMENT),paymentController.createPayment)
+router.put('/:id',checkPermission(PERMISSIONS.UPDATE_PAYMENT),paymentController.updatePayment)
+router.delete('/:id',checkPermission(PERMISSIONS.DELETE_PAYMENT),paymentController.deletePayment)
+
+
+router.post('/method',checkPermission(PERMISSIONS.CREATE_PAYMENT_METHOD),paymentController.createPaymentMethod)
+router.put('/method/:id',checkPermission(PERMISSIONS.UPDATE_PAYMENT_METHOD),paymentController.updatePaymentMethod)
+router.delete('/method/:id',checkPermission(PERMISSIONS.DELETE_PAYMENT_METHOD),paymentController.deletePaymentMethod)
+router.get('/method',checkPermission(PERMISSIONS.VIEW_PAYMENT_METHODS),paymentController.getPaymentMethod)
+router.get('/method/:id',checkPermission(PERMISSIONS.VIEW_PAYMENT_METHOD),paymentController.getPaymentMethodById)
+router.get('/VNPay',checkPermission(PERMISSIONS.PAYMENT_VNPAY),paymentController.paymentVNPay)
 
 module.exports = router

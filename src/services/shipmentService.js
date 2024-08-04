@@ -46,7 +46,7 @@ const getShippingMethod = async ({
     return {
       status: "success",
       total: count,
-      items: rows,
+      shippingMethods: rows,
       totalPages: Math.ceil(count / limit),
       currentPage: +page,
     };
@@ -138,7 +138,7 @@ const getShipment = async ({
     return {
       status: "success",
       total: count,
-      items: rows,
+      shipments: rows,
       totalPages: Math.ceil(count / limit),
       currentPage: +page,
     };

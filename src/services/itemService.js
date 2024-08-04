@@ -87,13 +87,7 @@ const getPageItem = async ({
         }
       ],
     });
-    // redis.set('get-list-item',JSON.stringify({
-    //   status: "success",
-    //   total: count,
-    //   items: rows,
-    //   totalPages: Math.ceil(count / limit),
-    //   currentPage: +page
-    // }))
+  
     return {
       status: "success",
       total: count,

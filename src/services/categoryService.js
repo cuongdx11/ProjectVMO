@@ -106,7 +106,7 @@ const getCategories = async ({
     });
     return {
       status: "success",
-      items: rows,
+      categories: rows,
       total: count,
       totalPages: Math.ceil(count / limit),
       currentPage: +page,

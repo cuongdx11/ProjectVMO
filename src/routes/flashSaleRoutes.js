@@ -15,7 +15,7 @@ router.get('/:id/items/:item_id',flashSaleController.getFlashSaleItemById)
 router.use(authenticateToken)
 router.get('/',checkPermission(PERMISSIONS.VIEW_FLASH_SALES),flashSaleController.getAllFlashSale)
 router.post('/',checkPermission(PERMISSIONS.CREATE_FLASH_SALE),flashSaleValidate,flashSaleController.createFlashSale)
-router.post('/items',flashSaleController.createFlashSaleItem)
+router.post('/items',checkPermission(PERMISSIONS.CREATE_FLASH_SALE_ITEM),flashSaleController.createFlashSaleItem)
 router.put('/:id',checkPermission(PERMISSIONS.UPDATE_FLASH_SALE),flashSaleController.updateFlashSale)
 router.delete('/:id',checkPermission(PERMISSIONS.DELETE_FLASH_SALE),flashSaleController.deleteFlashSale)
 

@@ -362,6 +362,7 @@ const maskAsRead = async(id) => {
     
   }
 }
+
 module.exports = {
   getAllUser,
   getUserById,

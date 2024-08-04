@@ -8,6 +8,7 @@ const ErrorRes = require("../helpers/ErrorRes");
 const Queue = require("bull");
 const redisClient = require("../config/redisConfig");
 const flashsaleQueue = new Queue("flashsale-queue", { redis: redisClient });
+
 const createFlashSale = async (flashsaleData) => {
   const transaction = await sequelize.transaction();
   try {
@@ -126,7 +127,7 @@ const getAllFlashSale = async ({
     return {
       status: "success",
       total: count,
-      items: rows,
+      flashSales: rows,
       totalPages: Math.ceil(count / limit),
       currentPage: +page,
     };

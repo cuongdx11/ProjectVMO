@@ -47,7 +47,7 @@ const getAllVoucher = async ({
         return {
             status: "success",
             total: count,
-            items: rows,
+            vouchers: rows,
             totalPages: Math.ceil(count / limit),
             currentPage: +page,
           };
@@ -175,6 +175,7 @@ const deleteVoucher = async (id) => {
     throw error;
   }
 };
+
 module.exports = {
   getVoucherAvailable,
   checkVoucher,

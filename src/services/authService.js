@@ -5,14 +5,18 @@ const sendMail = require('./emailService')
 const crypto = require('crypto');
 const ErrorRes = require('../helpers/ErrorRes')
 const { Op } = require('sequelize');
+const { sequelize } = require('../config/dbConfig');
 require('dotenv').config()
 const redisClient = require('../config/redisConfig');
 const userService = require('../services/userService')
 const Queue = require('bull');
+const UserRole = require('../models/userRoleModel');
+const {ROLE} = require('../constants/role')
 const emailQueue = new Queue('email-queue', {
     redis: redisClient
 });
 const register = async (username, email, password,is_notification) => {
+    const transaction = await sequelize.transaction();
     try {
         // Hash mật khẩu trước khi lưu vào cơ sở dữ liệu
         const hashedPassword = await bcrypt.hash(password, parseInt(process.env.SALT, 10));
@@ -33,7 +37,11 @@ const register = async (username, email, password,is_notification) => {
             email,
             password: hashedPassword,
             is_notification 
-        });
+        },{transaction});
+        await UserRole.create({
+            user_id: newUser.id,
+            role_id: ROLE.CUSTOMER
+        },{transaction})
        
         const verificationToken = jwt.sign({ userId: newUser.id, email: newUser.email }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '1h' // Thời gian hết hạn của token
@@ -45,11 +53,13 @@ const register = async (username, email, password,is_notification) => {
             verificationToken:verificationToken
         })
         // return  newUser;
+        await transaction.commit()
         return {
             status: "success",
             message: "Đăng ký thành công , vui lòng kiểm tra mail để xác minh tài khoản",
         }
     } catch (error) {
+        await transaction.rollback()
         throw error;
     }
 };

@@ -78,7 +78,7 @@ const getOrders = async({
     return {
       status: 'success',
       total: count,
-      items: rows,
+      orders: rows,
       totalPages: Math.ceil(count / limit),
       currentPage: +page,
     };
@@ -280,6 +280,33 @@ const getOrderById = async(id) => {
     throw error
   }
 }
+const createOrder = async(orderData) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { userId,items, discount, notes } = orderData;
+    const [subtotal, updatedItems] = await calculateSubtotalAndUpdateStock(items, transaction);
+    const totalAmount = subtotal  - discount;
+    const order = await Order.create({
+      user_id: userId,
+      subtotal,
+      total_amount: totalAmount,
+      discount,
+      status: 'pending',
+      payment_status: 'unpaid',
+      notes,
+    }, { transaction });
+    await createOrderItems(order.id, updatedItems, transaction);
+    await transaction.commit();
+    return {
+      status : 'success',
+      message: 'Tạo đơn hàng thành công',
+      order: order
+    }
+  } catch (error) {
+    await transaction.rollback();
+    throw error
+  }
+}
 const updateOrder = async(id,orderData) => {
   try {
     const order = await Order.findByPk(id)
@@ -439,8 +466,10 @@ const calculateSubtotalAndUpdateStock =async(items,transaction) => {
     subtotal += priceSale * item.quantity;
     const name = dbItem.name
     await dbItem.update({ stock_quantity: dbItem.stock_quantity - item.quantity }, { transaction });
-    await flashSaleItem.update({quantity : flashSaleItem.quantity -item.quantity,
-      sold_quantity: flashSaleItem.sold_quantity + item.quantity },{transaction})
+    if(flashSaleItem) {
+      await flashSaleItem.update({quantity : flashSaleItem.quantity -item.quantity,
+        sold_quantity: flashSaleItem.sold_quantity + item.quantity },{transaction})
+    }
     updatedItems.push({ ...item,name : name, price: priceSale });
     
   }))
@@ -550,7 +579,7 @@ const createOrderDiscount = async(orderId,voucher_code,discount,transaction) => 
   return orderDiscount
 }
 
-const createOrder = async(orderData) =>{
+const createOrderByUser = async(userId,orderData) =>{
   const validationErrors = validateCheckoutData(orderData);
   if (validationErrors.length > 0) {
     throw new ErrorRes(400, validationErrors);
@@ -558,7 +587,7 @@ const createOrder = async(orderData) =>{
 
   const transaction = await sequelize.transaction();
   try {
-    const { items, userId, voucher_code, notes, paymentMethodId, shippingMethodId,shippingCost } = orderData;
+    const { items, voucher_code, notes, paymentMethodId, shippingMethodId,shippingCost } = orderData;
 
     const [subtotal, updatedItems] = await calculateSubtotalAndUpdateStock(items, transaction);
     
@@ -731,6 +760,7 @@ module.exports = {
   applyVoucher,
   getOrders,
   updateStatusOrder,
-  updateStatusShipment
+  updateStatusShipment,
+  createOrderByUser
 
 };

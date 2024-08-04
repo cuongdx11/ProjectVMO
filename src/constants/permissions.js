@@ -21,6 +21,10 @@ const PERMISSIONS = {
     CREATE_ORDER: 'create_order',
     UPDATE_ORDER: 'update_order',
     DELETE_ORDER: 'delete_order',
+    CREATE_ORDER_USER: 'create_order_user',
+    UPDATE_STATUS_ORDER: 'update_status_order',
+    UPDATE_STATUS_ORDER_SHIP: 'update_status_order_ship',
+    
     //users
     VIEW_USERS: 'view_users',
     VIEW_USER: 'view_user',
@@ -62,6 +66,65 @@ const PERMISSIONS = {
     CREATE_FLASH_SALE: 'create_flash_sale',
     UPDATE_FLASH_SALE: 'update_flash_sale',
     DELETE_FLASH_SALE: 'delete_flash_sale',
+    CREATE_FLASH_SALE_ITEM: 'create_flash_sale_item',
+
+    //notifications
+    VIEW_NOTIFICATIONS: 'view_notifications',
+    VIEW_NOTIFICATION: 'view_notification',
+    CREATE_NOTIFICATION: 'create_notification',
+    UPDATE_NOTIFICATION: 'update_notification',
+    DELETE_NOTIFICATION: 'delete_notification',
+    MASK_READ_NOTIFICATION: 'mask-read-notification',
+
+    //payment
+    VIEW_PAYMENT_METHODS: 'view_payment_methods',
+    VIEW_PAYMENT_METHOD: 'view_payment_method',
+    CREATE_PAYMENT_METHOD: 'create_payment_method',
+    UPDATE_PAYMENT_METHOD: 'update_payment_method',
+    DELETE_PAYMENT_METHOD: 'delete_payment_method',
+    PAYMENT_VNPAY: 'payment_vnpay',
+    VIEW_PAYMENTS: 'view_payments',
+    VIEW_PAYMENT: 'view_payment',
+    CREATE_PAYMENT: 'create_payment',
+    UPDATE_PAYMENT: 'update_payment',
+    DELETE_PAYMENT: 'delete_payment',
+
+    //Review
+    VIEW_REVIEWS: 'view_reviews',
+    VIEW_REVIEW: 'view_review',
+    CREATE_REVIEW: 'create_review',
+    UPDATE_REVIEW: 'update_review',
+    DELETE_REVIEW: 'delete_review',
+
+
+    //Shipment
+    VIEW_SHIPMENTS: 'view_shipments',
+    VIEW_SHIPMENT: 'view_shipment',
+    CREATE_SHIPMENT: 'create_shipment',
+    UPDATE_SHIPMENT: 'update_shipment',
+    DELETE_SHIPMENT: 'delete_shipment',
+    //ShippingMethod
+    VIEW_SHIPPING_METHODS: 'view_shipping_methods',
+    VIEW_SHIPPING_METHOD: 'view_shipping_method',
+    CREATE_SHIPPING_METHOD: 'create_shipping_method',
+    UPDATE_SHIPPING_METHOD: 'update_shipping_method',
+    DELETE_SHIPPING_METHOD: 'delete_shipping_method',
+
+    //Voucher
+    VIEW_VOUCHERS: 'view_vouchers',
+    VIEW_VOUCHER: 'view_voucher',
+    CREATE_VOUCHER: 'create_voucher',
+    UPDATE_VOUCHER: 'update_voucher',
+    DELETE_VOUCHER: 'delete_voucher',
+
+   
+
+
+
+
+
+
+
 }
 
 module.exports = PERMISSIONS

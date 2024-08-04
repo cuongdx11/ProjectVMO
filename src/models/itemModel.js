@@ -18,7 +18,7 @@ const Item = sequelize.define('Item', {
         }
     },
     name: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.TEXT,
         allowNull: false
     },
     barcode: {

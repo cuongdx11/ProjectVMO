@@ -19,6 +19,16 @@ const createOrder = async(req,res,next) => {
         next(error)
     }
 }
+const createOrderByUser = async(req,res,next) => {
+    try {
+        const user = req.user
+        const orderData = req.body
+        const newOrder = await orderService.createOrderByUser(user.userId,orderData)
+        res.status(201).json(newOrder)
+    } catch (error) {
+        next(error)
+    }
+}
 const getOrderById = async(req,res,next) => {
     try {
         const {id}  = req.params
@@ -106,6 +116,7 @@ module.exports = {
     applyVoucher,
     getOrders,
     updateStatusOrder,
-    updateStatusShipment
+    updateStatusShipment,
+    createOrderByUser
 
 }

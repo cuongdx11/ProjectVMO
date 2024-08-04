@@ -10,6 +10,15 @@ const getPaymentMethod = async(req,res,next) => {
         next(error)
     }
 }
+const getPaymentMethodById = async(req,res,next) => {
+  try {
+    const {id} = req.params
+    const paymentMethod = await paymentService.getPaymentMethodById(id)
+    res.status(200).json(paymentMethod)
+  } catch (error) {
+    next(error)
+  }
+}
 const createPaymentMethod = async(req,res,next) => {
   try {
       const paymentMethodData = req.body
@@ -102,5 +111,6 @@ module.exports = {
     getPaymentById,
     updatePayment,
     deletePayment,
-    createPayment
+    createPayment,
+    getPaymentMethodById
 }

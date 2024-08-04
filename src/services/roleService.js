@@ -1,6 +1,7 @@
 const Role = require("../models/roleModel");
 const { sequelize } = require("../config/dbConfig");
 const ErrorRes = require("../helpers/ErrorRes");
+
 const createRole = async (roleData) => {
   const transaction = await sequelize.transaction();
   try {
@@ -54,7 +55,7 @@ const getAllRole = async ({
     });
     return {
         status: "success",
-        items: rows,
+        roles: rows,
         total: count,
         totalPages: Math.ceil(count / limit),
         currentPage: +page,
