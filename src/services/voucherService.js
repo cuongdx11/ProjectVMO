@@ -56,31 +56,41 @@ const getAllVoucher = async ({
         throw error
     }
 };
-const getVoucherAvailable = async ({ orderTotal, userId, ...query }) => {
+const getVoucherAvailable = async ({ orderTotal, userId }) => {
   try {
-    const user = await User.findByPk(userId);
-    if (!user) {
-      throw new ErrorRes("User not found", 404);
-    }
-    const timeSignUser = new Date(user.created_at);
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    const isNewUser = timeSignUser >= oneMonthAgo;
+    
     let where = {
       min_order_value: {
         [Op.lte]: orderTotal,
       },
+      type : 'general'
     };
-    if (isNewUser) {
-      where = {
-        [Op.or]: [
-          {
-            type: "newuser",
+    if (userId) {
+      const user = await User.findByPk(userId);
+      if (!user) {
+        throw new ErrorRes("User not found", 404);
+      }
+      const timeSignUser = new Date(user.created_at);
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      const isNewUser = timeSignUser >= oneMonthAgo;
+      if (isNewUser) {
+        where = {
+          [Op.or]: [
+            {
+              type: "newuser",
+            },
+            {
+              type: "general",
+            }
+          ],
+          min_order_value: {
+            [Op.lte]: orderTotal,
           },
-          where,
-        ],
-      };
+        };
+      }
     }
+   
     const vouchers = await Voucher.findAll({
       where,
     });
@@ -95,7 +105,7 @@ const getVoucherAvailable = async ({ orderTotal, userId, ...query }) => {
     throw error;
   }
 };
-const checkVoucher = async (voucher_code, user_id, orderTotal) => {
+const checkVoucher = async (voucher_code, orderTotal) => {
   try {
     const voucher = await Voucher.findOne({
       where: {
@@ -114,6 +124,7 @@ const checkVoucher = async (voucher_code, user_id, orderTotal) => {
 
     return {
       status: "success",
+      message: "Mã giảm giá hợp lệ",
       voucher,
     };
   } catch (error) {

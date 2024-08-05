@@ -3,7 +3,6 @@ const authService = require('../services/authService');
 
 const register = async (req, res,next) => {
     const { username, email, password,is_notification } = req.body;
-
     try {
         const newUser = await authService.register(username, email, password,is_notification);
         res.status(200).json(newUser);
@@ -15,8 +14,8 @@ const login = async (req, res,next) => {
     const { email, password } = req.body;
 
     try {
-        const token = await authService.login(email, password);
-        res.status(200).json( token );
+        const login = await authService.login(email, password);
+        res.status(200).json( login );
     } catch (error) {
         next(error)
     }

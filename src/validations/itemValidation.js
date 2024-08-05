@@ -5,10 +5,9 @@ const itemSchema = Joi.object({
     'number.base': 'ID danh mục phải là một số nguyên',
     'any.required': 'ID danh mục là bắt buộc'
   }),
-  name: Joi.string().max(100).required().messages({
+  name: Joi.string().required().messages({
     'string.base': 'Tên sản phẩm phải là một chuỗi',
     'string.empty': 'Tên sản phẩm không được để trống',
-    'string.max': 'Tên sản phẩm chỉ được tối đa 100 ký tự',
     'any.required': 'Tên sản phẩm là bắt buộc'
   }),
   barcode: Joi.string().max(50).optional().messages({

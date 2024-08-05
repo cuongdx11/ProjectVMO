@@ -19,7 +19,7 @@ const getVoucherAvailable = async(req,res,next) => {
 const checkVoucher = async(req,res,next) => {
     try {
         const {voucher_code,user_id,orderTotal} = req.query
-        const voucher = await voucherService.checkVoucher(voucher_code,user_id,orderTotal)
+        const voucher = await voucherService.checkVoucher(voucher_code,orderTotal)
         res.status(200).json(voucher)
     } catch (error) {
         next(error)

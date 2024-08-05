@@ -84,11 +84,11 @@ const login = async (email, password) => {
 
         // Tạo accesstoken JWT
         const accessToken = jwt.sign({ userId: user.id, email: user.email,is_admin : user.is_admin  }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '600s' // Thời gian hết hạn của token
+            expiresIn: '15m' // Thời gian hết hạn của token
         });
         // Tạo refreshtoken JWT
         const refreshToken = jwt.sign({ userId: user.id, email: user.email,is_admin : user.is_admin  }, process.env.REFRESH_TOKEN_SECRET, {
-            expiresIn: '1h' // Thời gian hết hạn của token
+            expiresIn: '7d' // Thời gian hết hạn của token
         });
         user.refresh_token = refreshToken;
         await user.save();
@@ -217,7 +217,7 @@ const refreshToken = async(refreshToken) => {
             throw new ErrorRes(404, 'Tài khoản không tồn tại')
         }
         const accessToken = jwt.sign({ userId: user.id, email: user.email,is_admin : user.is_admin  }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '500s' // Thời gian hết hạn của token
+            expiresIn: '15m' // Thời gian hết hạn của token
         });
         return {
             status : 'success',

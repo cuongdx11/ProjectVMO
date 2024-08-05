@@ -113,7 +113,7 @@ const maskAllRead = async() => {
     try {
         await Notification.update({is_read: true},{where: {is_read: false}})
         return {
-            status: true,
+            status: "success",
             message: 'Đã đánh dấu đã đọc tất cả thông báo'
         }
     } catch (error) {
