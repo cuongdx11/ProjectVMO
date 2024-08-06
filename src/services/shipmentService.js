@@ -148,7 +148,6 @@ const getShipment = async ({
 };
 const getShipmentById = async (id) => {
   try {
-    const { id } = req.params;
     const shipment = await Shipment.findByPk(id);
     return {
       status: "success",

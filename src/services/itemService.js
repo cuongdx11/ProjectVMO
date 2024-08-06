@@ -34,13 +34,6 @@ const getPageItem = async ({
   ...query
 }) => {
   try {
-    // const getAllItem = await redis.get('get-list-item')
-    // if(getAllItem) {
-    //   return {
-    //     status: 'success',
-    //     data: JSON.parse(getAllItem)
-    //   }
-    // }
     const offset = page <= 1 ? 0 : page - 1;
     const limit = +pageSize || +process.env.LIMIT || 10;
     const queries = { 

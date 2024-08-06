@@ -32,18 +32,6 @@ const Shipment = sequelize.define('Shipment', {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
-    estimated_delivery_date: {
-        type: DataTypes.DATE,
-        allowNull: true
-    },
-    actual_delivery_date: {
-        type: DataTypes.DATE,
-        allowNull: true
-    },
-    shipped_at: {
-        type: DataTypes.DATE,
-        allowNull: true
-    },
     delivered_at: {
         type: DataTypes.DATE,
         allowNull: true

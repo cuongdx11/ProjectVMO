@@ -21,6 +21,13 @@ const Order = sequelize.define('Order', {
             key: 'id'
         }
     },
+    creator_id: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: User,
+            key: 'id'
+        }
+    },
     subtotal: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false
@@ -41,10 +48,6 @@ const Order = sequelize.define('Order', {
         type: DataTypes.ENUM('pending', 'confirmed', 'processing', 'completed', 'cancelled'),
         defaultValue: 'pending'
     },
-    payment_status: {
-        type: DataTypes.ENUM('unpaid', 'paid', 'refunded'),
-        defaultValue: 'unpaid'
-    },
     notes: {
         type: DataTypes.TEXT,
         allowNull: true
@@ -64,6 +67,7 @@ const Order = sequelize.define('Order', {
 
 // Thiết lập quan hệ giữa Order và User, Voucher
 Order.belongsTo(User, { as: 'user' ,foreignKey: 'user_id' });
+Order.belongsTo(User, { as: 'creator', foreignKey: 'creator_id' });
 // Order.belongsTo(Voucher, { foreignKey: 'voucher_id' });
 Order.hasMany(OrderItem,{as: 'order_items',foreignKey: 'order_id'})
 

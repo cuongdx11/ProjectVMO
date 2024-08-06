@@ -13,6 +13,8 @@ const getOrders = async(req,res,next) => {
 const createOrder = async(req,res,next) => {
     try {
         const orderData = req.body
+        const user = req.user
+        orderData.creatorId = user.userId
         const newOrder = await orderService.createOrder(orderData)
         res.status(201).json(newOrder)
     } catch (error) {
