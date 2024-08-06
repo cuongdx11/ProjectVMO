@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác minh địa chỉ email</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff; /* Nền trắng cho toàn bộ email */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #fff; /* Nền trắng cho nội dung */
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            border: 1px solid #ddd; /* Đường viền màu xám */
+        }
+        .header {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #ddd; /* Đường viền dưới header */
+        }
+        .header img {
+            max-width: 100px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .content p {
+            margin: 10px 0;
+        }
+        .content a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .content a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+            font-size: 12px;
+            border-top: 1px solid #ddd; /* Đường viền trên footer */
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Xác minh địa chỉ email</h1>
+        </div>
+        <div class="content">
+            <p>Thân gửi,</p>
+            <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>Pshop</strong>.</p>
+            <p>Vui lòng xác minh địa chỉ email của bạn bằng cách nhấp vào liên kết sau:</p>
+            <p><a href="{{url}}">{{url}}</a></p>
+            <p>Nếu bạn không yêu cầu việc này, xin hãy bỏ qua email này.</p>
+            <p>Trân trọng,</p>
+            <p>Đội ngũ Pshop</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 Pshop. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

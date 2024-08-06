@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Xác nhận đơn hàng</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .header {
+        background-color: #f4f4f4;
+        padding: 20px;
+        text-align: center;
+      }
+      .content {
+        padding: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+      .total {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Cảm ơn bạn đã đặt hàng tại PShop!</h1>
+      </div>
+      <div class="content">
+        <p>Xin chào {{fullName}},</p>
+        <p>
+          Chúng tôi đã nhận được đơn hàng của bạn và đang xử lý. Dưới đây là chi
+          tiết đơn hàng:
+        </p>
+        <p><strong>Mã đơn hàng:</strong> {{orderId}}</p>
+        <table>
+          <tr>
+            <th>Sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Giá</th>
+          </tr>
+          {{itemsRows}}
+        </table>
+        <p>
+          <strong>Tổng tiền hàng:</strong>
+          {{subtotal}} VND
+        </p>
+        <p>
+          <strong>Phí vận chuyển:</strong>
+          {{shippingCost}} VND
+        </p>
+        <p>
+          <strong>Giảm giá:</strong> {{discount}} VND
+        </p>
+        <p class="total">
+          <strong>Tổng cộng:</strong>
+          {{totalAmount}} VND
+        </p>
+        <p>Chúng tôi sẽ thông báo cho bạn khi đơn hàng được gửi đi.</p>
+        <p>
+          Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi tại
+          pshoptech@gmail.com
+        </p>
+        <p>Cảm ơn bạn đã mua sắm tại PShop!</p>
+        <p>Trân trọng,<br />Đội ngũ PShop</p>
+      </div>
+    </div>
+  </body>
+</html>

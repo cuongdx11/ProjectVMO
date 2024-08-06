@@ -343,15 +343,18 @@ const calculateSubtotalAndUpdateStock =async(items,transaction) => {
     if(!dbItem){
       throw new ErrorRes(404,'Sản phẩm không tồn tại')
     }
-    if (dbItem.stock_quantity < item.quantity) {
-      throw new ErrorRes(400, 'Sản phẩm không đủ số lượng');
+    if (dbItem.stock_quantity === 0 || (flashSaleItem && flashSaleItem.quantity === 0)) {
+      throw new ErrorRes(400, `Sản phẩm ${item.item_id} hết hàng`);
+    }
+    if (dbItem.stock_quantity < item.quantity || (flashSaleItem && flashSaleItem.quantity < item.quantity)) {
+      throw new ErrorRes(400, `Sản phẩm ${item.item_id} không đủ số lượng`);
     }
     const priceSale = await getFlashSalePrice(flashSaleItem,dbItem.selling_price,transaction)
     subtotal += priceSale * item.quantity;
     const name = dbItem.name
     await dbItem.update({ stock_quantity: dbItem.stock_quantity - item.quantity }, { transaction });
     if(flashSaleItem) {
-      await flashSaleItem.update({quantity : flashSaleItem.quantity -item.quantity,
+      await flashSaleItem.update({quantity: flashSaleItem.quantity - item.quantity,
         sold_quantity: flashSaleItem.sold_quantity + item.quantity },{transaction})
     }
     updatedItems.push({ ...item,name : name, price: priceSale });

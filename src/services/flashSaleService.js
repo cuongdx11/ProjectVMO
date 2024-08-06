@@ -67,6 +67,9 @@ const createFlashSaleItem = async (flashsaleItemData) => {
         // throw new Error(`Item with id ${itemData.item_id} not found`);
         throw new ErrorRes(404, "Sản phẩm không tồn tại");
       }
+      if(itemData.quantity > item.stock_quantity) {
+        throw new ErrorRes(400, "Số lượng sản phẩm không đủ");
+      }
       const flashSaleItemData = {
         ...itemData,
         flash_sale_id: flashsaleItemData.flash_sale_id,

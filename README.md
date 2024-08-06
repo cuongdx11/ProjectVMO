@@ -10,6 +10,7 @@ Dự án này là một RESTful API cho hệ thống web bán hàng, được x�
 - **Express**: Framework web cho NodeJS
 - **MySQL**: Hệ quản trị cơ sở dữ liệu quan hệ
 - **Sequelize**: ORM (Object-Relational Mapping) cho NodeJS
+- **Redis**: Cơ sở dữ liệu lưu trữ trong bộ nhớ, sử dụng để caching và quản lý session
 
 ## Tính năng chính
 
@@ -19,6 +20,12 @@ Dự án này là một RESTful API cho hệ thống web bán hàng, được x�
 - Quản lý giỏ hàng
 - Quản lý Flash Sale
 - Đánh giá và bình luận sản phẩm
+- Theo dõi đơn hàng
+- Quản lý giao hàng
+- Quản lý thanh toán
+- Và nhiều tính năng khác nữa 
+
+##Cơ sở dữ liệu 
 
 ## Cài đặt
 
@@ -37,39 +44,14 @@ Dự án này là một RESTful API cho hệ thống web bán hàng, được x�
    npm install
    ```
 
-4. Tạo file `.env` và cấu hình các biến môi trường:
-   ```
-    NODE_ENV=development
-    PORT=5000
-    DB_HOST=localhost
-    DB_USER=root
-    DB_PASSWORD=password
-    DB_NAME=ecommerce_db
-    CLOUDINARY_NAME=your_cloudinary_name
-    CLOUDINARY_API_KEY=your_cloudinary_api_key
-    CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-    EMAIL_HOST=smtp.your-email.com
-    EMAIL_PORT=587
-    EMAIL_USER=your-email@example.com
-    EMAIL_PASSWORD=your-email-password
-    VNPAY_TMN_CODE=your_vnpay_tmn_code
-    VNPAY_HASH_SECRET=your_vnpay_hash_secret
-
-   ```
-
-5. Chạy migrations để tạo cấu trúc database:
-   ```
-   npx sequelize-cli db:migrate
-   ```
-
-6. Khởi động server:
+4. Khởi động server:
    ```
    npm start
    ```
 
 ## API Documentation
 
-Để xem chi tiết về các endpoint API, vui lòng truy cập `/api-docs` sau khi khởi động server.
+Để xem chi tiết về các endpoint API, vui lòng truy cập `http://localhost:5000/api-docs` sau khi khởi động server.
 
 ## Đóng góp
 

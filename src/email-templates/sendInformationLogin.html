@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chào mừng đến với Pshop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .header {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chào mừng đến với Pshop!</h1>
+        </div>
+        <div class="content">
+            <p>Thân gửi anh/chị {{fullName}},</p>
+            <p>Chào mừng anh/chị đã đến với <strong>Pshop</strong></p>
+            <p>Anh/chị có thể đăng nhập và cập nhật thông tin của mình bằng cách truy cập vào <a href="{{urlLogin}}">{{urlLogin}}</a></p>
+            <p>Thông tin đăng nhập của anh/chị như sau:</p>
+            <p><strong>Email:</strong> {{email}}</p>
+            <p><strong>Mật khẩu:</strong> {{password}}</p>
+            <p>Nếu anh/chị quên mật khẩu vui lòng liên hệ với chúng tôi tại pshoptech@gmail.com</p>
+            <p>Cảm ơn anh/chị đã quan tâm đến Pshop.</p>
+            <p>Trân trọng,<br>Đội ngũ Pshop</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 Pshop. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

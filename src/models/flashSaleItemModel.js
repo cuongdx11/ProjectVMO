@@ -35,10 +35,6 @@ const FlashSaleItem = sequelize.define('FlashSaleItem', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    max_quantity_per_customer: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
     sold_quantity: {
         type: DataTypes.INTEGER,
         defaultValue: 0

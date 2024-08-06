@@ -1,6 +1,8 @@
 const cron = require('node-cron')
 const {Op} = require('sequelize')
 const FlashSale = require('../models/flashSaleModel')
+const fs = require('fs');
+const path = require('path');
 const nodemailer = require('nodemailer')
 const NotificationFlashSale = require('../models/notificationFlashSaleModel')
 const User = require('../models/userModel')
@@ -13,36 +15,54 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendMailFlashSale = async(flashSale) => {
+const sendMailFlashSale = async (flashSale) => {
     try {
         const notificationFlashSale = await NotificationFlashSale.findOne({
             where: {
                 flash_sale_id: flashSale.id
             }
-        })
-        if(notificationFlashSale.is_send === 1){
+        });
+
+        if (notificationFlashSale.is_send === 1) {
             return {
                 message: 'Thông báo đã được gửi rồi'
-            }
+            };
         }
+
         const users = await User.findAll({
-            where : {
-                is_notification : 1
+            where: {
+                is_notification: 1
             }
         });
-        const userEmails = users.map(user => user.email)
+
+        const userEmails = users.map(user => user.email);
+        const templatePath = path.join(__dirname, '../email-templates/flashSaleNotifications.html');
+        const htmlTemplate = fs.readFileSync(templatePath, 'utf8');
+
+        const htmlContent = htmlTemplate.replace(/{{flashSaleName}}/g, flashSale.name);
+
         const mailOptions = {
             from: process.env.EMAIL_USER,
             bcc: userEmails.join(','),
             subject: `Flash Sale "${flashSale.name}" sắp bắt đầu!`,
-            text: `Flash Sale "${flashSale.name}" sẽ bắt đầu sau 15 phút. Đừng bỏ lỡ!`,
-            html: `<b>Flash Sale "${flashSale.name}" sẽ bắt đầu sau 15 phút. Đừng bỏ lỡ!</b>`
+            html: htmlContent
         };
-        return transporter.sendMail(mailOptions);
+
+        await transporter.sendMail(mailOptions);
+
+        await NotificationFlashSale.update({ is_send: 1 }, {
+            where: {
+                flash_sale_id: flashSale.id
+            }
+        });
+
+        return {
+            message: 'Thông báo flash sale đã được gửi thành công.'
+        };
     } catch (error) {
-        throw error
+        throw error;
     }
-}
+};
 
 const checkFlashSale = async() => {
     try {
