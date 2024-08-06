@@ -1,0 +1,4888 @@
+openapi: 3.0.0
+info:
+  title: API Web Bán Hàng VMO
+  description: API cho ứng dụng web bán hàng 
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api/v1
+tags:
+  - name : Auth
+    description: API cho đăng nhập, đăng ký, xác thực
+  - name: User
+    description: API cho người dùng
+  - name : Category
+    description: API cho danh mục
+  - name : Item
+    description: API cho sản phẩm
+  - name: Orders
+    description: API cho đơn hàng
+  - name : FlashSale
+    description: API cho chương trình khuyến mãi
+  - name : Voucher
+    description: API cho mã giảm giá
+  - name: Shipment
+    description: API cho vận chuyển
+  - name: Payment 
+    description: API cho thanh toán
+  - name: Permission
+    description: API cho các quyền
+  - name: Role
+    description: API cho các vai trò
+  - name: UserRole
+    description: API phân vai trò cho user
+  - name: RolePermission
+    description: API phân quyền cho vai trò người dùng
+  - name: Notifications
+    description: API cho thông báo
+paths:
+  /users:
+    get:
+      summary: Lấy tất cả người dùng
+      description: Lấy danh sách tất cả người dùng với khả năng phân trang, sắp xếp, lọc và tìm kiếm.
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Số trang cần lấy.
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 10
+          description: Số lượng người dùng mỗi trang.
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+          description: Trường để sắp xếp kết quả.
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Thứ tự sắp xếp (asc hoặc desc).
+        - in: query
+          name: filter
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+          description: Tiêu chí lọc cho người dùng.
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Từ khóa tìm kiếm để lọc người dùng.
+      responses:
+        '200':
+          description: Lấy danh sách người dùng thành công.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  total:
+                    type: integer
+                    example: 100
+                  totalPages:
+                    type: integer
+                    example: 10
+                  currentPage:
+                    type: integer
+                    example: 1
+        '500':
+          description: Lỗi hệ thống.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Đã xảy ra lỗi
+    post:
+      summary: Tạo người dùng mới
+      description: Tạo một tài khoản người dùng mới.
+      tags:
+        - User
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Nick name
+                  example: nguyenvana
+                full_name:
+                  type: string
+                  description: Tên đầy đủ
+                  example: Nguyễn Văn A
+                phone:
+                  type: string
+                  description: Số điện thoại
+                  example: 0123456789
+                email:
+                  type: string
+                  description: Địa chỉ email
+                  example: nguyenvana@example.com
+                password:
+                  type: string
+                  description: Mật khẩu
+                  example: password123
+                avatar:
+                  type: string
+                  format: binary
+                  description: Ảnh đại diện
+      responses:
+        '200':
+          description: Tạo tài khoản thành công.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Tạo tài khoản thành công
+                  newUser:
+                    $ref: '#/components/schemas/User'
+        '500':
+          description: Lỗi hệ thống.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Đã xảy ra lỗi
+
+  /users/{id}:
+    get:
+      tags:
+      - User
+      security:
+        - bearerAuth: []
+      summary: Lấy thông tin người dùng theo ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      summary: Cập nhật thông tin người dùng
+      description: Cập nhật thông tin tài khoản người dùng.
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID của người dùng cần cập nhật.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Nick name
+                  default: ''
+                full_name:
+                  type: string
+                  description: Tên đầy đủ
+                  nullable: true
+                  example: ''
+                phone:
+                  type: string
+                  description: Số điện thoại
+                  example: ''
+                email:
+                  type: string
+                  description: Địa chỉ email
+                  nullable: true
+                  example: ''
+                avatar:
+                  type: string
+                  format: binary
+                  description: File ảnh đại diện
+                  nullable: true
+            example:
+              username: nguyenvana
+              full_name: Nguyễn Văn A
+              phone: "0123456789"
+              email: nguyenvana@example.com
+      responses:
+        '200':
+          description: Cập nhật tài khoản thành công.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Cập nhật tài khoản thành công
+                  updatedUser:
+                    $ref: '#/components/schemas/User'
+        '404':
+          description: Tài khoản không tồn tại.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Tài khoản không tồn tại
+        '500':
+          description: Lỗi hệ thống.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Đã xảy ra lỗi
+   
+    delete:
+      tags:
+      - User
+      summary: Xóa người dùng
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xóa thành công
+
+  
+  /users/notifications:
+    get:
+      summary: Lấy thông tin cấu hình thông báo của người dùng
+      description: Trả về danh sách thông báo của người dùng cùng với thông tin tổng quan.
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công, trả về danh sách thông báo của người dùng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Trạng thái của phản hồi
+                    example: 'success'
+                  message:
+                    type: string
+                    description: Thông báo về kết quả của yêu cầu
+                    example: 'Lấy thông báo thành công'
+                  total:
+                    type: integer
+                    description: Tổng số thông báo
+                    example: 2
+                  notifications:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: ID của thông báo
+                          example: 1
+                        user_id:
+                          type: integer
+                          description: ID của người dùng
+                          example: 2
+                        content:
+                          type: string
+                          description: Nội dung thông báo
+                          example: 'Đơn hàng 66 của bạn đã được xác nhận'
+                        type:
+                          type: string
+                          description: Loại thông báo
+                          example: 'ORDER'
+                        is_read:
+                          type: boolean
+                          description: Trạng thái đã đọc hay chưa
+                          example: false
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Thời gian tạo thông báo
+                          example: '2024-07-31T14:16:38.000Z'
+                        updated_at:
+                          type: string
+                          format: date-time
+                          description: Thời gian cập nhật thông báo
+                          example: '2024-07-31T14:16:38.000Z'
+        '401':
+          description: Không có quyền truy cập, cần phải đăng nhập
+        '500':
+          description: Lỗi server nội bộ
+  /users/mask:
+    get:
+      summary: Đánh dấu tất cả thông báo là đã đọc
+      description: Đánh dấu tất cả thông báo của người dùng là đã đọc.
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thành công, tất cả thông báo đã được đánh dấu là đã đọc
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Trạng thái của phản hồi
+                    example: 'success'
+                  message:
+                    type: string
+                    description: Thông báo về kết quả của yêu cầu
+                    example: 'Đã đánh dấu đọc tất cả các thông báo'
+        '401':
+          description: Không có quyền truy cập, cần phải đăng nhập
+        '500':
+          description: Lỗi server nội bộ
+
+  /users/my-orders:
+    get:
+      summary: Get user orders
+      description: Retrieve the list of orders for the authenticated user.
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: The page number to retrieve.
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 10
+          description: The number of orders per page.
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+          description: The field to sort the results by.
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: The order of sorting (asc or desc).
+        - in: query
+          name: filter
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+          description: The filter criteria for the orders.
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: The search term to filter orders by.
+      responses:
+        '200':
+          description: Orders retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Lấy danh sách đơn hàng thành công
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  total:
+                    type: integer
+                    example: 100
+                  totalPages:
+                    type: integer
+                    example: 10
+                  currentPage:
+                    type: integer
+                    example: 1
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Tài khoản không tồn tại
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: An error occurred
+  /users/profile:
+    get:
+      summary: Get user profile
+      description: Retrieve the profile information of the authenticated user
+      operationId: getUserProfile
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Lấy thông tin tài khoản thành công"
+                  user:
+                   type: object
+                   properties:
+                    username:
+                      type: string
+                      example: "abc"
+                    full_name:
+                      type: string
+                      example: "Nguyen Van A"
+                    phone:
+                      type: string
+                      example: "0123456789"
+                    email:
+                      type: string
+                      example: "abc@example.com"
+                    avatar:
+                      type: string
+                      example: "https://res.cloudinary.com"
+                    is_verified:
+                      type: boolean
+                      example: true
+
+
+        '401':
+          description: Unauthorized - Invalid or missing authentication token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid authentication token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+    put:
+      summary: Cập nhật hồ sơ người dùng
+      description: Cập nhật thông tin hồ sơ của người dùng đã xác thực
+      operationId: updateUserProfile
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Thông tin cần cập nhật
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "abc"
+                full_name:
+                  type: string
+                  example: "Nguyen Van A"
+                phone:
+                  type: string
+                  example: "0123456789"
+                email:
+                  type: string
+                  example: "abc@example.com"
+      responses:
+        '200':
+          description: Cập nhật thành công hồ sơ người dùng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Cập nhật thông tin tài khoản thành công"
+                  user:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        example: "abc"
+                      full_name:
+                        type: string
+                        example: "Nguyen Van A"
+                      phone:
+                        type: string
+                        example: "0123456789"
+                      email:
+                        type: string
+                        example: "abc@example.com"
+                      avatar:
+                        type: string
+                        example: "https://res.cloudinary.com"
+                      is_verified:
+                        type: boolean
+                        example: true
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Dữ liệu yêu cầu không hợp lệ"
+        '401':
+          description: Unauthorized - Invalid or missing authentication token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Token xác thực không hợp lệ"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+  /users/profile/avatar:
+    put:
+      summary: Cập nhật avatar người dùng
+      description: Cập nhật avatar của người dùng đã xác thực
+      operationId: updateUserAvatar
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: URL của avatar mới
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Cập nhật thành công avatar người dùng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Cập nhật avatar thành công"
+                  user:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        example: "abc"
+                      full_name:
+                        type: string
+                        example: "Nguyen Van A"
+                      phone:
+                        type: string
+                        example: "0123456789"
+                      email:
+                        type: string
+                        example: "abc@example.com"
+                      avatar:
+                        type: string
+                        example: "https://res.cloudinary.com/new_avatar_url"
+                      is_verified:
+                        type: boolean
+                        example: true
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Dữ liệu yêu cầu không hợp lệ"
+        '401':
+          description: Unauthorized - Invalid or missing authentication token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Token xác thực không hợp lệ"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+  /categories:
+    get:
+      tags:
+        - Category
+      summary: Lấy danh sách danh mục
+      parameters:
+        - name: page
+          in: query
+          description: Trang hiện tại
+          required: false
+          schema: 
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          description: Số lượng danh mục trên 1 trang
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          description: Tìm kiếm theo tên danh mục
+          required: false
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: Sắp xếp theo tên danh mục
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Sắp xếp thứ tự
+          required: false
+          schema:
+            type: string
+            enum:
+              - 'asc'
+              - 'desc'
+        - name: filter
+          in: query
+          description: Bộ lọc danh mục theo các tiêu chí cụ thể
+          required: false
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 3
+                        parent_id:
+                          type: integer
+                          nullable: true
+                          example: 2
+                        name:
+                          type: string
+                          example: "Hang Tuyen"
+                        position:
+                          type: integer
+                          example: 10
+                        banner_image:
+                          type: string
+                          example: "https://res.cloudinary.com"
+                        status:
+                          type: string
+                          example: "active"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2024-06-26T07:01:28.000Z"
+                        updated_at:
+                          type: string
+                          format: date-time
+                          example: "2024-07-11T07:51:16.000Z"
+                  total:
+                    type: integer
+                    example: 11
+                  totalPages:
+                    type: integer
+                    example: 11
+                  currentPage:
+                    type: integer
+                    example: 1
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Yêu cầu không hợp lệ"
+        '401':
+          description: Không có quyền truy cập
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không có quyền truy cập"
+        '404':
+          description: Không tìm thấy danh mục
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không tìm thấy danh mục"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    post:
+      tags:
+      - Category
+      summary: Tạo danh mục mới
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                parent_id:
+                  type: integer
+                  example: ''
+                name:
+                  type: string
+                  example: ''
+                position:
+                  type: integer
+                  example: ''
+                banner_image:
+                  type: string
+                  format: binary
+                status:
+                  type: string
+                  enum: [active, inactive]
+      responses:
+        '201':
+          description: Đã tạo thành công
+  /categories/{id}/change-position:
+    put:
+      tags:
+        - Category
+      summary: Thay đổi vị trí của danh mục
+      description: Cập nhật vị trí của một danh mục và điều chỉnh vị trí của các danh mục khác tương ứng.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của danh mục cần di chuyển
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPosition:
+                  type: integer
+                  description: Vị trí mới của danh mục.
+                  example: 3
+      responses:
+        '200':
+          description: Cập nhật vị trí danh mục thành công.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Cập nhật vị trí danh mục thành công"
+        '400':
+          description: Yêu cầu không hợp lệ. Dữ liệu nhập không đúng.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Dữ liệu nhập không đúng"
+        '500':
+          description: Lỗi máy chủ nội bộ.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+  /categories/{id}:
+    get:
+      tags:
+      - Category
+      summary: Lấy thông tin danh mục theo ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+    put:
+      tags:
+      - Category
+      summary: Cập nhật thông tin danh mục
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+      responses:
+        '200':
+          description: Cập nhật thành công
+    delete:
+      tags:
+      - Category
+      summary: Xóa danh mục
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xóa thành công
+
+  /items:
+    get:
+      tags:
+        - Item
+      summary: Lấy danh sách sản phẩm
+      parameters:
+        - name: page
+          in: query
+          description: Trang hiện tại
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          description: Số lượng sản phẩm trên 1 trang
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          description: Tìm kiếm theo tên sản phẩm
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: Sắp xếp theo tên sản phẩm
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Sắp xếp thứ tự
+          schema:
+            type: string
+            enum:
+              - 'asc'
+              - 'desc'
+        - name: filter
+          in: query
+          description: Bộ lọc sản phẩm theo các tiêu chí cụ thể
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Yêu cầu không hợp lệ"
+        '401':
+          description: Không có quyền truy cập
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không có quyền truy cập"
+        '404':
+          description: Không tìm thấy sản phẩm
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không tìm thấy sản phẩm"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    post:
+      tags:
+      - Item
+      summary: Tạo sản phẩm mới
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Item'
+      responses:
+        '201':
+          description: Đã tạo thành công
+
+  /items/{id}:
+    get:
+      tags:
+      - Item
+      summary: Lấy thông tin sản phẩm theo ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+    put:
+      tags:
+      - Item
+      summary: Cập nhật thông tin sản phẩm
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+      responses:
+        '200':
+          description: Cập nhật thành công
+    delete:
+      tags:
+      - Item
+      summary: Xóa sản phẩm
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xóa thành công
+  /items/upload-excel:
+    post:
+      tags:
+      - Item
+      summary: Tạo nhiều sản phẩm bằng excel
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Tập tin Excel chứa thông tin sản phẩm
+      responses:
+        '200':
+          description: Tải lên thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Tải lên thành công
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Tập tin không hợp lệ hoặc thiếu tập tin
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Lỗi hệ thống, vui lòng thử lại sau
+        
+  /auth/login:
+    post:
+      tags:
+      - Auth
+      summary: Đăng nhập
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Địa chỉ email của người dùng
+                  example: ''
+                password:
+                  type: string
+                  description: Mật khẩu của người dùng
+                  example: ''
+              required:
+                - email
+                - password
+
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Đăng nhập thành công
+                  accessToken:
+                    type: string
+                    description: JWT access token
+                  refreshToken: 
+                    type: string
+                    description: JWT refresh token
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    example: ['Email hoặc mật khẩu không hợp lệ','Email bắt buộc']
+        '401':
+          description: Yêu cầu không được phép
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: 'error'
+                  statusCode:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Sai mật khẩu hoặc thiếu
+
+
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Đăng ký tài khoản mới
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: ''
+                  description: Tên người dùng để đăng ký
+                password:
+                  type: string
+                  example: ''
+                  description: Mật khẩu cho tài khoản
+                email:
+                  type: string
+                  example: ''
+                  description: Địa chỉ email của người dùng
+                is_notification:
+                  type: boolean
+                  description: Cho phép nhận thông báo (true) hoặc không (false)
+                  example: false
+              required:
+                - username
+                - password
+                - email
+      responses:
+        '201':
+          description: Đăng ký thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: 'success'
+                  message:
+                    type: string
+                    example: "Đăng ký thành công , vui lòng kiểm tra mail để xác minh tài khoản"
+        '409':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: 'error'
+                  statusCode:
+                    type: integer
+                    example: 409
+                  error:
+                    type: string
+                    example: "Tên người dùng đã tồn tại"
+                    description: Thông báo lỗi
+
+  /auth/logout:
+    get:
+      tags:
+        - Auth
+      summary: Đăng xuất tài khoản
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Đăng xuất thành công
+  /auth/refresh-token:
+    post:
+      tags:
+      - Auth
+      summary: Refresh token
+      security:
+        - bearerAuth: []
+      parameters:
+      - in: header
+        name: refresh_token
+        required: true
+        schema:
+          type: string
+        description: Bearer <refresh_token>
+      responses:
+        '200':
+          description: Refresh token thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: Access token mới
+  /auth/verify-email:
+    get:
+      tags:
+        - Auth
+      summary: Verify email
+      parameters:
+      - in: query
+        name: token
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Verify thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Email verified successfully
+                  user: 
+                    type: object
+                    description: Thông tin user
+  /auth/forgot-password:
+    post:
+      tags:
+        - Auth
+      summary: Quên mật khẩu
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: ''
+              required:
+                - email
+      responses:
+        '200':
+          description: Đã gửi liên kết đặt lại mật khẩu thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Đã gửi liên kết đặt lại mật khẩu thành công"
+        '400':
+          description: Định dạng email không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Định dạng email không hợp lệ"
+        '404':
+          description: Email không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Email không tồn tại"
+        '500':
+          description: Lỗi hệ thống
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi hệ thống"
+
+      
+  /auth/reset-password:
+    post:
+      tags:
+        - Auth
+      summary: Reset password
+      parameters:
+        - name: token
+          in: query
+          description: Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Reset password request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: 'success'
+                  message:
+                    type: string
+                    example: 'Mật khẩu đã được đặt lại thành công'
+  /auth/change-password:
+    post:
+      summary: Thay đổi mật khẩu người dùng
+      description: Cho phép người dùng thay đổi mật khẩu của họ.
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                oldPass:
+                  type: string
+                  description: Mật khẩu cũ của người dùng.
+                  example: ''
+                newPass:
+                  type: string
+                  description: Mật khẩu mới của người dùng.
+                  example: ''
+              required:
+                - oldPass
+                - newPass
+      responses:
+        '200':
+          description: Đã thay đổi mật khẩu thành công.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Mật khẩu đã được đổi thành công
+        '404':
+          description: Người dùng không tìm thấy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Tài khoản không tồn tại
+        '500':
+          description: Lỗi hệ thống.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Đã xảy ra lỗi
+
+  /orders:
+    get:
+      tags:
+        - Orders
+      security:
+        - bearerAuth: []
+      summary: Lấy danh sách đơn hàng
+      parameters:
+        - name: page
+          in: query
+          description: Trang hiện tại
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          description: Số lượng đơn hàng trên 1 trang
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          description: Tìm kiếm theo mã đơn hàng
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: Sắp xếp theo tên khách hàng hoặc ngày đặt hàng
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Sắp xếp thứ tự
+          schema:
+            type: string
+            enum:
+              - 'asc'
+              - 'desc'
+        - name: filter
+          in: query
+          description: Bộ lọc đơn hàng theo các tiêu chí cụ thể
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Yêu cầu không hợp lệ"
+        '401':
+          description: Không có quyền truy cập
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không có quyền truy cập"
+        '404':
+          description: Không tìm thấy đơn hàng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không tìm thấy đơn hàng"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    post:
+      tags:
+      - Orders
+      summary: Tạo đơn hàng mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        '201':
+          description: Đã tạo thành công
+
+  /orders/{id}:
+    get:
+      tags:
+      - Orders
+      summary: Lấy thông tin đơn hàng theo ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+    put:
+      tags:
+      - Orders
+      summary: Cập nhật thông tin đơn hàng
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        '200':
+          description: Cập nhật thành công
+    delete:
+      tags:
+      - Orders
+      summary: Xóa đơn hàng
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Hủy thành công
+
+  /orders/{id}/cancel:
+    get:
+      tags:
+        - Orders
+      summary: Hủy đơn hàng
+      description: Hủy đơn hàng dựa trên ID của đơn hàng.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của đơn hàng cần hủy
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Hủy đơn hàng thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Hủy đơn hàng thành công"
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Yêu cầu không hợp lệ"
+        '401':
+          description: Không có quyền truy cập
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không có quyền truy cập"
+        '404':
+          description: Không tìm thấy đơn hàng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không tìm thấy đơn hàng"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+  /orders/paymentVNPay:
+    get:
+      tags:
+        - Orders
+      summary: Lấy và cập nhật thông tin thanh toán cho đơn hàng dựa trên chi tiết giao dịch
+      parameters:
+        - name: vnp_ResponseCode
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Mã phản hồi từ cổng thanh toán
+        - name: vnp_TxnRef
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID tham chiếu giao dịch
+        - name: vnp_TransactionNo
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Số giao dịch từ cổng thanh toán
+      responses:
+        '200':
+          description: Cập nhật thông tin thanh toán thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Trạng thái của thao tác
+                  message:
+                    type: string
+                    description: Tin nhắn cho biết kết quả của thao tác
+                required:
+                  - status
+                  - message
+        '400':
+          description: Yêu cầu không hợp lệ, tham số truy vấn không hợp lệ
+        '404':
+          description: Đơn hàng hoặc thanh toán không tìm thấy
+        '500':
+          description: Lỗi máy chủ nội bộ
+
+
+
+
+  /flash-sale:
+    get:
+      tags:
+        - FlashSale
+      summary: Lấy danh sách Flash Sale
+      parameters:
+        - name: page
+          in: query
+          description: Trang hiện tại
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          description: Số lượng Flash Sale trên 1 trang
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          description: Tìm kiếm theo tên Flash Sale
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: Sắp xếp theo tên Flash Sale hoặc ngày bắt đầu
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Sắp xếp thứ tự
+          schema:
+            type: string
+            enum:
+              - 'asc'
+              - 'desc'
+        - name: filter
+          in: query
+          description: Bộ lọc Flash Sale theo các tiêu chí cụ thể
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FlashSale'
+                  total:
+                    type: integer
+                    example: 100
+                  totalPages:
+                    type: integer
+                    example: 10
+                  currentPage:
+                    type: integer
+                    example: 1
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Yêu cầu không hợp lệ"
+        '401':
+          description: Không có quyền truy cập
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không có quyền truy cập"
+        '404':
+          description: Không tìm thấy Flash Sale
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không tìm thấy Flash Sale"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    post:
+      tags: 
+      - FlashSale
+      summary: Tạo flash sale mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlashSale'
+      responses:
+        '201':
+          description: Đã tạo thành công
+
+  /flash-sale/{id}:
+    get:
+      tags:
+      - FlashSale
+      summary: Lấy thông tin flash sale theo ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlashSale'
+    put:
+      tags:
+      - FlashSale
+      summary: Cập nhật thông tin flash sale
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlashSale'
+      responses:
+        '200':
+          description: Cập nhật thành công
+    delete:
+      tags:
+      - FlashSale
+      summary: Xóa flash sale
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xóa thành công
+  /flash-sale/{id}/items:
+      get:
+        tags:
+          - FlashSale
+        summary: Lấy danh sách sản phẩm của Flash Sale
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: integer
+        responses:
+          '200':
+            description: Thành công
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    message:
+                      type: string
+                      example: "Lấy thành công"
+                    data:
+                      type: object
+                      properties:
+                        count:
+                          type: integer
+                          example: 1
+                        rows:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/FlashSaleItem'
+          '404':
+            description: Không có sản phẩm nào
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Không có sản phẩm nào"
+          '500':
+            description: Lỗi máy chủ nội bộ
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Lỗi máy chủ nội bộ"
+
+  /flash-sale/{id}/items/{item_id}:
+    get:
+      tags:
+        - FlashSale
+      summary: Lấy thông tin sản phẩm của Flash Sale theo ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: item_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Lấy thành công"
+                  data:
+                    $ref: '#/components/schemas/FlashSaleItem'
+        '404':
+          description: Không có sản phẩm nào
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không có sản phẩm nào"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+  /flash-sale/items:
+    post:
+      tags:
+        - FlashSale
+      summary: Tạo sản phẩm mới cho Flash Sale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                flash_sale_id:
+                  type: integer
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      item_id:
+                        type: integer
+                      discount_percentage:
+                        type: number
+      responses:
+        '201':
+          description: Đã tạo thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Tạo thành công"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FlashSaleItem'
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+  /vouchers:
+    get:
+      tags:
+        - Voucher
+      summary: Lấy danh sách voucher
+      parameters:
+        - name: page
+          in: query
+          description: Trang hiện tại
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          description: Số lượng voucher trên 1 trang
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          description: Tìm kiếm theo tên hoặc mã voucher
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: Sắp xếp theo tên hoặc ngày bắt đầu
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Sắp xếp thứ tự
+          schema:
+            type: string
+            enum:
+              - 'asc'
+              - 'desc'
+        - name: filter
+          in: query
+          description: Bộ lọc voucher theo các tiêu chí cụ thể
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Voucher'
+                  total:
+                    type: integer
+                    example: 100
+                  totalPages:
+                    type: integer
+                    example: 10
+                  currentPage:
+                    type: integer
+                    example: 1
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Yêu cầu không hợp lệ"
+        '401':
+          description: Không có quyền truy cập
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không có quyền truy cập"
+        '404':
+          description: Không tìm thấy voucher
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không tìm thấy voucher"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    post:
+      tags:
+      - Voucher
+      summary: Tạo voucher mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Voucher'
+      responses:
+        '201':
+          description: Đã tạo thành công
+
+  /vouchers/{id}:
+    get:
+      tags: 
+      - Voucher
+      summary: Lấy thông tin voucher theo ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Voucher'
+    put:
+      tags:
+      - Voucher
+      summary: Cập nhật thông tin voucher
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Voucher'
+      responses:
+        '200':
+          description: Cập nhật thành công
+    delete:
+      tags:
+      - Voucher
+      summary: Xóa voucher
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xóa thành công
+  /vouchers/available:
+    get:
+      tags:
+      - Voucher
+      summary: Lấy danh sách voucher khả dụng
+      parameters:
+      - name: orderTotal
+        in: query
+        required: true
+        description: Tổng giá trị đơn hàng
+        schema:
+          type: number
+          format: float
+      - name: userId
+        in: query
+        required: true
+        description: ID người dùng
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  vouchers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        code:
+                          type: string
+                          example: ABC123
+                        discount:
+                          type: number
+                          format: float
+                          example: 20.5
+                        min_order_value:
+                          type: number
+                          format: float
+                          example: 100.0
+                        type:
+                          type: string
+                          example: newuser
+                        expiry_date:
+                          type: string
+                          format: date-time
+                          example: 2024-12-31T23:59:59Z
+        '404':
+          description: Không tìm thấy người dùng hoặc voucher
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Không có voucher phù hợp hoặc người dùng không tồn tại
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Lỗi hệ thống, vui lòng thử lại sau
+
+  /vouchers/validate:
+    get:
+      tags:
+      - Voucher
+      summary: Kiểm tra tính hợp lệ của voucher
+      parameters:
+      - name: voucher_code
+        in: query
+        required: true
+        description: Mã voucher cần kiểm tra
+        schema:
+          type: string
+      - name: user_id
+        in: query
+        required: true
+        description: ID người dùng
+        schema:
+          type: integer
+      - name: orderTotal
+        in: query
+        required: true
+        description: Tổng giá trị đơn hàng
+        schema:
+          type: number
+          format: float
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  voucher:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      code:
+                        type: string
+                        example: ABC123
+                      discount:
+                        type: number
+                        format: float
+                        example: 20.5
+                      min_order_value:
+                        type: number
+                        format: float
+                        example: 100.0
+                      type:
+                        type: string
+                        example: newuser
+                      expiry_date:
+                        type: string
+                        format: date-time
+                        example: 2024-12-31T23:59:59Z
+        '404':
+          description: Không tìm thấy voucher
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Voucher không tồn tại hoặc không đáp ứng được điều kiện
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Lỗi hệ thống, vui lòng thử lại sau
+  /shipment/method:
+    get:
+      tags:
+        - Shipment
+      summary: Lấy tất cả các phương thức giao hàng
+      parameters:
+        - name: page
+          in: query
+          description: Số trang
+          schema:
+            type: integer
+            default: 1
+        - name: sortBy
+          in: query
+          description: Trường để sắp xếp
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Thứ tự sắp xếp (asc hoặc desc)
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: Lọc theo tiêu chí cụ thể
+          schema:
+            type: object
+        - name: search
+          in: query
+          description: Từ khóa tìm kiếm
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          description: Số mục trên mỗi trang
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Danh sách các phương thức giao hàng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  total:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShippingMethod'
+                  totalPages:
+                    type: integer
+                  currentPage:
+                    type: integer
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Shipment
+      summary: Tạo một phương thức giao hàng mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingMethod'
+      responses:
+        '201':
+          description: Phương thức giao hàng được tạo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingMethod'
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Shipment
+      summary: Cập nhật một phương thức giao hàng
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của phương thức giao hàng cần cập nhật
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingMethod'
+      responses:
+        '200':
+          description: Phương thức giao hàng đã được cập nhật
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingMethod'
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - Shipment
+      summary: Xóa một phương thức giao hàng
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của phương thức giao hàng cần xóa
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Phương thức giao hàng đã được xóa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+      security:
+        - bearerAuth: []
+  /shipment/method/{id}:
+    get:
+      tags:
+        - Shipment
+      summary: Lấy chi tiết phương thức giao hàng theo ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của phương thức giao hàng
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chi tiết phương thức giao hàng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingMethod'
+      security:
+        - bearerAuth: []
+  /shipment/:
+    get:
+      tags:
+        - Shipment
+      summary: Lấy tất cả các đơn hàng
+      parameters:
+        - name: page
+          in: query
+          description: Số trang
+          schema:
+            type: integer
+            default: 1
+        - name: sortBy
+          in: query
+          description: Trường để sắp xếp
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Thứ tự sắp xếp (asc hoặc desc)
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: Lọc theo tiêu chí cụ thể
+          schema:
+            type: object
+        - name: search
+          in: query
+          description: Từ khóa tìm kiếm
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          description: Số mục trên mỗi trang
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Danh sách các đơn hàng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  total:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shipment'
+                  totalPages:
+                    type: integer
+                  currentPage:
+                    type: integer
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Shipment
+      summary: Tạo một đơn hàng mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Shipment'
+      responses:
+        '201':
+          description: Đơn hàng được tạo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+      security:
+        - bearerAuth: []
+  /shipment/{id}:
+    get:
+      tags:
+        - Shipment
+      summary: Lấy chi tiết đơn hàng theo ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của đơn hàng
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chi tiết đơn hàng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - Shipment
+      summary: Cập nhật một đơn hàng
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của đơn hàng cần cập nhật
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Shipment'
+      responses:
+        '200':
+          description: Đơn hàng đã được cập nhật
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - Shipment
+      summary: Xóa một đơn hàng
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của đơn hàng cần xóa
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Đơn hàng đã được xóa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+      security:
+        - bearerAuth: []
+  /payment:
+    get:
+      tags:
+        - Payment
+      summary: Lấy tất cả các giao dịch thanh toán
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Số trang
+          schema:
+            type: integer
+            default: 1
+        - name: sortBy
+          in: query
+          description: Trường để sắp xếp
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Thứ tự sắp xếp (asc hoặc desc)
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: Lọc theo tiêu chí cụ thể
+          schema:
+            type: object
+        - name: search
+          in: query
+          description: Từ khóa tìm kiếm
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          description: Số mục trên mỗi trang
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Danh sách các giao dịch thanh toán
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  total:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Payment'
+                  totalPages:
+                    type: integer
+                  currentPage:
+                    type: integer
+
+    post:
+      tags:
+        - Payment
+      summary: Tạo một giao dịch thanh toán mới
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_id:
+                  type: integer
+                  example: 76
+                payment_method_id:
+                  type: integer
+                  example: 1
+                amount:
+                  type: number
+                  format: double
+                  example: 5329950.00
+                transaction_id:
+                  type: string
+                  example: "8238374234"
+                currency:
+                  type: string
+                  example: "VND"
+                status:
+                  type: string
+                  enum: [ "pending", "completed", "failed" ]
+                  example: "pending"
+              required:
+                - order_id
+                - payment_method_id
+                - amount
+                - transaction_id
+                - currency
+                - status
+      responses:
+        '201':
+          description: Giao dịch thanh toán được tạo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+
+  /payment/{id}:
+    get:
+      tags:
+        - Payment
+      summary: Lấy giao dịch thanh toán cụ thể theo ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của giao dịch thanh toán
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chi tiết giao dịch thanh toán
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+
+    put:
+      tags:
+        - Payment
+      summary: Cập nhật một giao dịch thanh toán
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của giao dịch thanh toán cần cập nhật
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+      responses:
+        '200':
+          description: Giao dịch thanh toán đã được cập nhật
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+
+    delete:
+      tags:
+        - Payment
+      summary: Xóa một giao dịch thanh toán
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của giao dịch thanh toán cần xóa
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Giao dịch thanh toán đã được xóa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+
+  /payment/method:
+    get:
+      tags:
+        - Payment
+      summary: Lấy tất cả các phương thức thanh toán
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Số trang
+          schema:
+            type: integer
+            default: 1
+        - name: sortBy
+          in: query
+          description: Trường để sắp xếp
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Thứ tự sắp xếp (asc hoặc desc)
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: Lọc theo tiêu chí cụ thể
+          schema:
+            type: object
+        - name: search
+          in: query
+          description: Từ khóa tìm kiếm
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          description: Số mục trên mỗi trang
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Danh sách các phương thức thanh toán
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  total:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentMethod'
+                  totalPages:
+                    type: integer
+                  currentPage:
+                    type: integer
+
+    post:
+      tags:
+        - Payment
+      summary: Tạo một phương thức thanh toán mới
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentMethod'
+      responses:
+        '201':
+          description: Phương thức thanh toán được tạo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+
+    put:
+      tags:
+        - Payment
+      summary: Cập nhật một phương thức thanh toán
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của phương thức thanh toán cần cập nhật
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentMethod'
+      responses:
+        '200':
+          description: Phương thức thanh toán đã được cập nhật
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+
+    delete:
+      tags:
+        - Payment
+      summary: Xóa một phương thức thanh toán
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của phương thức thanh toán cần xóa
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Phương thức thanh toán đã được xóa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+
+  /payment/method/{id}:
+    get:
+      tags:
+        - Payment
+      summary: Lấy chi tiết phương thức thanh toán theo ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của phương thức thanh toán
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chi tiết phương thức thanh toán
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+
+  /payment/VNPay:
+    get:
+      tags:
+        - Payment
+      summary: Xử lý callback thanh toán VNPay
+      parameters:
+        - name: vnp_ResponseCode
+          in: query
+          description: Mã phản hồi từ VNPay
+          schema:
+            type: string
+        - name: vnp_TxnRef
+          in: query
+          description: Tham chiếu giao dịch
+          schema:
+            type: string
+        - name: vnp_TransactionNo
+          in: query
+          description: Số giao dịch VNPay
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thanh toán VNPay đã được xử lý
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+  /permissions:
+    post:
+      tags:
+        - Permission
+      summary: Tạo quyền mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Permission'
+      responses:
+        '201':
+          description: Đã tạo thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Permission'
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    get:
+      tags:
+        - Permission
+      summary: Lấy danh sách tất cả quyền
+      parameters:
+        - name: page
+          in: query
+          description: Trang hiện tại
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          description: Số lượng quyền trên một trang
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          description: Tìm kiếm theo tên quyền
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: Sắp xếp theo tên hoặc ngày tạo
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Sắp xếp thứ tự
+          schema:
+            type: string
+            enum:
+              - 'asc'
+              - 'desc'
+        - name: filter
+          in: query
+          description: Bộ lọc quyền theo các tiêu chí cụ thể
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Permission'
+                  total:
+                    type: integer
+                    example: 100
+                  totalPages:
+                    type: integer
+                    example: 10
+                  currentPage:
+                    type: integer
+                    example: 1
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+  /permissions/{id}:
+    get:
+      tags:
+        - Permission
+      summary: Lấy thông tin quyền theo ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Permission'
+        '404':
+          description: Quyền không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Quyền không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    put:
+      tags:
+        - Permission
+      summary: Cập nhật quyền
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Permission'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Cập nhật thành công"
+        '404':
+          description: Quyền không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Quyền không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    delete:
+      tags:
+        - Permission
+      summary: Xóa quyền
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xóa thành công
+        '404':
+          description: Quyền không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Quyền không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+  /roles:
+    post:
+      tags:
+        - Role
+      summary: Tạo Role mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+      responses:
+        '201':
+          description: Đã tạo Role thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Role'
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    get:
+      tags:
+        - Role
+      summary: Lấy danh sách tất cả Roles
+      parameters:
+        - name: page
+          in: query
+          description: Trang hiện tại
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          description: Số lượng Role trên một trang
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          description: Tìm kiếm theo tên Role
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: Sắp xếp theo tên hoặc ngày tạo
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Sắp xếp thứ tự
+          schema:
+            type: string
+            enum:
+              - 'asc'
+              - 'desc'
+        - name: filter
+          in: query
+          description: Bộ lọc Role theo các tiêu chí cụ thể
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Role'
+                  total:
+                    type: integer
+                    example: 100
+                  totalPages:
+                    type: integer
+                    example: 10
+                  currentPage:
+                    type: integer
+                    example: 1
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+  /roles/{id}:
+    get:
+      tags:
+        - Role
+      summary: Lấy thông tin Role theo ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Role'
+        '404':
+          description: Role không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Role không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    put:
+      tags:
+        - Role
+      summary: Cập nhật Role
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+      responses:
+        '200':
+          description: Cập nhật Role thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Cập nhật Role thành công"
+                  data:
+                    $ref: '#/components/schemas/Role'
+        '404':
+          description: Role không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Role không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    delete:
+      tags:
+        - Role
+      summary: Xóa Role
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xóa Role thành công
+        '404':
+          description: Role không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Role không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+  /user-role:
+    post:
+      tags:
+        - UserRole
+      summary: Tạo UserRole mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRole'
+      responses:
+        '201':
+          description: Đã tạo UserRole thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/UserRole'
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+  /user-role/{id}:
+    get:
+      tags:
+        - UserRole
+      summary: Lấy thông tin UserRole theo ID người dùng
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/UserRole'
+        '404':
+          description: UserRole không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "UserRole không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    put:
+      tags:
+        - UserRole
+      summary: Cập nhật UserRole theo ID người dùng
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRole'
+      responses:
+        '200':
+          description: Cập nhật UserRole thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Cập nhật UserRole thành công"
+                  data:
+                    $ref: '#/components/schemas/UserRole'
+        '404':
+          description: UserRole không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "UserRole không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    delete:
+      tags:
+        - UserRole
+      summary: Xóa UserRole theo ID người dùng
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Xóa UserRole thành công
+        '404':
+          description: UserRole không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "UserRole không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+  /role-permission:
+    post:
+      tags:
+        - RolePermission
+      summary: Tạo RolePermission mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RolePermission'
+      responses:
+        '200':
+          description: Đã tạo RolePermission thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/RolePermission'
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+  /role-permission/{roleId}:
+    get:
+      tags:
+        - RolePermission
+      summary: Lấy thông tin RolePermission theo ID Role
+      parameters:
+        - in: path
+          name: roleId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  rolePermission:
+                    $ref: '#/components/schemas/RolePermissionDetail'
+        '404':
+          description: RolePermission không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "RolePermission không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    post:
+      tags:
+        - RolePermission
+      summary: Cập nhật RolePermission theo ID Role
+      parameters:
+        - in: path
+          name: roleId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                permissionId:
+                  type: integer
+      responses:
+        '200':
+          description: Cập nhật RolePermission thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Cập nhật RolePermission thành công"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+    delete:
+      tags:
+        - RolePermission
+      summary: Xóa RolePermission theo ID Role
+      parameters:
+        - in: path
+          name: roleId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                permissionId:
+                  type: integer
+      responses:
+        '200':
+          description: Xóa RolePermission thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Xóa RolePermission thành công"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Lấy tất cả thông báo
+      parameters:
+        - name: page
+          in: query
+          description: Số trang
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          description: Số lượng thông báo trên mỗi trang
+          schema:
+            type: integer
+            default: 10
+        - name: sortBy
+          in: query
+          description: Sắp xếp theo trường
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Thứ tự (asc hoặc desc)
+          schema:
+            type: string
+            enum:
+              - 'asc'
+              - 'desc'
+        - name: filter
+          in: query
+          description: Lọc thông báo
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        - name: search
+          in: query
+          description: Tìm kiếm thông báo
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  total:
+                    type: integer
+                    example: 100
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  totalPages:
+                    type: integer
+                    example: 10
+                  currentPage:
+                    type: integer
+                    example: 1
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+    post:
+      tags:
+        - Notifications
+      summary: Tạo thông báo mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                type:
+                  type: string
+      responses:
+        '201':
+          description: Thông báo đã được tạo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Notification'
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+  /notifications/mask-read:
+    get:
+      tags:
+        - Notifications
+      summary: Đánh dấu tất cả thông báo đã đọc
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Đã đánh dấu đã đọc tất cả thông báo"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+  /notifications/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: ID của thông báo
+    get:
+      tags:
+        - Notifications
+      summary: Lấy thông báo theo ID
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Notification'
+        '404':
+          description: Thông báo không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Thông báo không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+    put:
+      tags:
+        - Notifications
+      summary: Cập nhật thông báo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                type:
+                  type: string
+      responses:
+        '200':
+          description: Cập nhật thông báo thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Cập nhật thông báo thành công"
+                  data:
+                    $ref: '#/components/schemas/Notification'
+        '404':
+          description: Thông báo không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Thông báo không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+    delete:
+      tags:
+        - Notifications
+      summary: Xóa thông báo
+      responses:
+        '204':
+          description: Xóa thông báo thành công
+        '404':
+          description: Thông báo không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Thông báo không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+  /reviews:
+      get:
+        tags:
+          - Reviews
+        summary: Lấy tất cả đánh giá
+        parameters:
+          - name: page
+            in: query
+            description: Số trang
+            schema:
+              type: integer
+              default: 1
+          - name: pageSize
+            in: query
+            description: Số lượng đánh giá trên mỗi trang
+            schema:
+              type: integer
+              default: 10
+          - name: sortBy
+            in: query
+            description: Sắp xếp theo trường
+            schema:
+              type: string
+          - name: order
+            in: query
+            description: Thứ tự (asc hoặc desc)
+            schema:
+              type: string
+              enum:
+                - 'asc'
+                - 'desc'
+          - name: filter
+            in: query
+            description: Lọc đánh giá
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+          - name: search
+            in: query
+            description: Tìm kiếm đánh giá
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Thành công
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    total:
+                      type: integer
+                      example: 100
+                    reviews:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Review'
+                    totalPages:
+                      type: integer
+                      example: 10
+                    currentPage:
+                      type: integer
+                      example: 1
+          '500':
+            description: Lỗi máy chủ nội bộ
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Lỗi máy chủ nội bộ"
+
+      post:
+        tags:
+          - Reviews
+        summary: Tạo đánh giá mới
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                  item_id:
+                    type: string
+                  rating:
+                    type: number
+                  comment:
+                    type: string
+        responses:
+          '201':
+            description: Đánh giá đã được tạo
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "success"
+                    message:
+                      type: string
+                      example: "Thêm đánh giá thành công"
+                    data:
+                      $ref: '#/components/schemas/Review'
+          '500':
+            description: Lỗi máy chủ nội bộ
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Lỗi máy chủ nội bộ"
+
+  /reviews/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: ID của đánh giá
+    get:
+      tags:
+        - Reviews
+      summary: Lấy đánh giá theo ID
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Review'
+        '404':
+          description: Đánh giá không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Đánh giá không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+    put:
+      tags:
+        - Reviews
+      summary: Cập nhật đánh giá
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                item_id:
+                  type: string
+                rating:
+                  type: number
+                comment:
+                  type: string
+      responses:
+        '200':
+          description: Cập nhật đánh giá thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Cập nhật đánh giá thành công"
+                  data:
+                    $ref: '#/components/schemas/Review'
+        '404':
+          description: Đánh giá không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Đánh giá không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+    delete:
+      tags:
+        - Reviews
+      summary: Xóa đánh giá
+      responses:
+        '204':
+          description: Xóa đánh giá thành công
+        '404':
+          description: Đánh giá không tồn tại
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Đánh giá không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        is_verified:
+          type: boolean
+        is_admin:
+          type: boolean
+
+    Category:
+      type: object
+      properties:
+        name:
+          type: string
+        position:
+          type: integer
+        banner_image:
+          type: string
+          format: binary
+        status:
+          type: string
+          enum: [active, inactive]
+
+    Item:
+      type: object
+      properties:
+        category_id:
+          type: integer
+        name:
+          type: string
+        barcode:
+          type: string
+        purchase_price:
+          type: number
+        selling_price:
+          type: number
+        weight:
+          type: number
+        thumbnail:
+          type: string
+          format: binary
+        description:
+          type: string
+        stock_quantity:
+          type: integer
+        images:
+            type: array
+            items:
+              type: string
+              format: binary
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        voucher_id:
+          type: integer
+        total_amount:
+          type: number
+        status:
+          type: string
+          enum: [pending, completed, cancelled]
+        order_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        item_id:
+          type: integer
+        quantity:
+          type: integer
+        price:
+          type: number
+
+    FlashSale:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          enum: [preparing, active, ended]
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        flash_sale_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlashSaleItem'
+
+    FlashSaleItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        item_id:
+          type: integer
+        original_price:
+          type: number
+        flash_sale_price:
+          type: number
+        quantity:
+          type: integer
+        max_quantity_per_customer:
+          type: integer
+        sold_quantity:
+          type: integer
+
+    Voucher:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        type:
+          type: string
+        discount_amount:
+          type: number
+        discount_type:
+          type: string
+          enum: [percentage, fixed]
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        quantity:
+          type: integer
+        remaining_quantity:
+          type: integer
+        min_order_value:
+          type: number
+    ShippingMethod:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        cost:
+          type: number
+          format: float
+    Shipment:
+      type: object
+      properties:
+        id:
+          type: integer
+        order_id:
+          type: integer
+        shipping_method_id:
+          type: integer
+        tracking_number:
+          type: string
+        status:
+          type: string
+          enum: ['pending', 'processing', 'shipped', 'delivered', 'returned']
+        shipping_cost:
+          type: number
+          format: float
+        estimated_delivery_date:
+          type: string
+          format: date
+        actual_delivery_date:
+          type: string
+          format: date
+        shipped_at:
+          type: string
+          format: date
+        delivered_at:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        order_id:
+          type: integer
+        transaction_id:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PaymentMethod:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Permission:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    UserRole:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        role_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    RolePermission:
+      type: object
+      properties:
+        role_id:
+          type: integer
+        permission_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    RolePermissionDetail:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        item_id:
+          type: string
+        rating:
+          type: number
+        comment:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
