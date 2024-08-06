@@ -25,8 +25,8 @@ Dự án này là một RESTful API cho hệ thống web bán hàng, được x�
 - Quản lý thanh toán
 - Và nhiều tính năng khác nữa 
 
-##Cơ sở dữ liệu 
-
+## Cơ sở dữ liệu 
+![dbvmo](https://github.com/user-attachments/assets/9c45bd1d-ff14-4277-8c65-d9be84b5a8a1)
 ## Cài đặt
 
 1. Clone repository:
