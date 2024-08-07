@@ -1,6 +1,7 @@
 const Shipment = require("../models/shipmentModel");
 const ShippingMethod = require("../models/shippingMethodModel");
 const { sequelize } = require("../config/dbConfig");
+const { Op } = require("sequelize");
 const ErrorRes = require("../helpers/ErrorRes");
 
 const getShippingMethod = async ({

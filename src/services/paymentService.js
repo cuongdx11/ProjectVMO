@@ -2,6 +2,7 @@ const Payment = require("../models/paymentModel");
 const PaymentMethod = require("../models/paymentMethodModel");
 const Order = require("../models/orderModel");
 const { sequelize } = require('../config/dbConfig');
+const { Op } = require("sequelize");
 const ErrorRes = require("../helpers/ErrorRes");
 const getPaymentMethod = async ({
   page = 1,

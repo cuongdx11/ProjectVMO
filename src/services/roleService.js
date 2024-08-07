@@ -1,5 +1,6 @@
 const Role = require("../models/roleModel");
 const { sequelize } = require("../config/dbConfig");
+const { Op } = require("sequelize");
 const ErrorRes = require("../helpers/ErrorRes");
 
 const createRole = async (roleData) => {

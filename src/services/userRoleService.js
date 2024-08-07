@@ -2,6 +2,7 @@ const ErrorRes = require("../helpers/ErrorRes");
 const UserRole = require("../models/userRoleModel");
 const User = require('../models/userModel')
 const Role = require('../models/roleModel')
+const { Op } = require("sequelize");
 
 const getUserRoles = async ({
   page = 1,

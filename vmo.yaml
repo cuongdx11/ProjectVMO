@@ -34,6 +34,10 @@ tags:
     description: API phân quyền cho vai trò người dùng
   - name: Notifications
     description: API cho thông báo
+  - name: Cart
+    description: API cho giỏ hàng
+  - name: Reviews
+    description: API cho đánh giá
 paths:
   /users:
     get:
@@ -1031,6 +1035,8 @@ paths:
       tags:
         - Item
       summary: Lấy danh sách sản phẩm
+      security:
+        - bearerAuth: []
       parameters:
         - name: page
           in: query
@@ -1156,6 +1162,8 @@ paths:
       tags:
       - Item
       summary: Cập nhật thông tin sản phẩm
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -1175,6 +1183,8 @@ paths:
       tags:
       - Item
       summary: Xóa sản phẩm
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -1189,6 +1199,8 @@ paths:
       tags:
       - Item
       summary: Tạo nhiều sản phẩm bằng excel
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -1687,23 +1699,91 @@ paths:
                     example: "Lỗi máy chủ nội bộ"
     post:
       tags:
-      - Orders
+        - Orders
+      security:
+        - bearerAuth: []
       summary: Tạo đơn hàng mới
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Order'
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  description: ID người dùng
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      productId:
+                        type: integer
+                        description: ID sản phẩm
+                      quantity:
+                        type: integer
+                        description: Số lượng
+                discount:
+                  type: number
+                  description: Giảm giá
+                notes:
+                  type: string
+                  description: Ghi chú
       responses:
         '201':
           description: Đã tạo thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Tạo đơn hàng thành công"
+                  order:
+                    $ref: '#/components/schemas/Order'
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Yêu cầu không hợp lệ"
+        '401':
+          description: Không có quyền truy cập
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không có quyền truy cập"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
 
   /orders/{id}:
     get:
       tags:
       - Orders
       summary: Lấy thông tin đơn hàng theo ID
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -1721,6 +1801,8 @@ paths:
       tags:
       - Orders
       summary: Cập nhật thông tin đơn hàng
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -1740,6 +1822,8 @@ paths:
       tags:
       - Orders
       summary: Xóa đơn hàng
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -1755,6 +1839,8 @@ paths:
       tags:
         - Orders
       summary: Hủy đơn hàng
+      security:
+        - bearerAuth: []
       description: Hủy đơn hàng dựa trên ID của đơn hàng.
       parameters:
         - name: id
@@ -1820,6 +1906,8 @@ paths:
       tags:
         - Orders
       summary: Lấy và cập nhật thông tin thanh toán cho đơn hàng dựa trên chi tiết giao dịch
+      security:
+        - bearerAuth: []
       parameters:
         - name: vnp_ResponseCode
           in: query
@@ -1862,15 +1950,268 @@ paths:
           description: Đơn hàng hoặc thanh toán không tìm thấy
         '500':
           description: Lỗi máy chủ nội bộ
+  /orders/apply-voucher:
+    post:
+      tags:
+        - Orders
+      summary: Áp dụng mã giảm giá cho đơn hàng
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                total_amount:
+                  type: number
+                  description: Tổng số tiền của đơn hàng
+                voucher_code:
+                  type: string
+                  description: Mã giảm giá
+      responses:
+        '200':
+          description: Áp dụng mã giảm giá thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Áp dụng mã giảm giá thành công"
+                  voucher:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      code:
+                        type: string
+                      discount_type:
+                        type: string
+                        enum:
+                          - "fixed"
+                          - "percentage"
+                      discount_amount:
+                        type: number
+                      discount:
+                        type: number
+                      end_date:
+                        type: string
+                        format: date-time
+                      remaining_quantity:
+                        type: integer
+                  finalTotal:
+                    type: number
+                    description: Tổng số tiền sau khi áp dụng mã giảm giá
+                  discountAmount:
+                    type: number
+                    description: Số tiền được giảm
+        '400':
+          description: Yêu cầu không hợp lệ hoặc mã giảm giá không còn hiệu lực
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Mã giảm giá đã hết hạn hoặc đã hết số lượng"
+        '404':
+          description: Không tìm thấy mã giảm giá
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Mã giảm giá không tồn tại"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+  /orders/{id}/status:
+    put:
+      tags:
+        - Orders
+      security:
+        - bearerAuth: []
+      summary: Cập nhật trạng thái đơn hàng
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của đơn hàng
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newStatus:
+                  type: string
+                  description: Trạng thái mới của đơn hàng
+                  enum:
+                    - 'confirmed'
+                    - 'processing'
+                    - 'completed'
+                    - 'cancelled'
+              required:
+                - newStatus
+      responses:
+        '200':
+          description: Cập nhật thành công trạng thái đơn hàng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Cập nhật thành công trạng thái đơn hàng"
+        '400':
+          description: Yêu cầu không hợp lệ hoặc khách hàng chưa thanh toán
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Khách hàng chưa thanh toán"
+        '401':
+          description: Không có quyền truy cập
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không có quyền truy cập"
+        '404':
+          description: Không tìm thấy đơn hàng hoặc thanh toán
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Không có đơn hàng hoặc thanh toán"
+        '500':
+          description: Lỗi máy chủ nội bộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lỗi máy chủ nội bộ"
+  /orders/{id}/ship:
+      put:
+        tags:
+          - Orders
+        security:
+          - bearerAuth: []
+        summary: Cập nhật trạng thái giao hàng
+        parameters:
+          - name: id
+            in: path
+            required: true
+            description: ID của đơn hàng
+            schema:
+              type: integer
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  newStatus:
+                    type: string
+                    description: Trạng thái mới của giao hàng
+                    enum:
+                      - 'processing'
+                      - 'shipped'
+                      - 'delivered'
+        responses:
+          '200':
+            description: Cập nhật thành công trạng thái giao hàng
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Cập nhật thành công trạng thái giao hàng"
+          '400':
+            description: Yêu cầu không hợp lệ
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Yêu cầu không hợp lệ"
+          '401':
+            description: Không có quyền truy cập
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Không có quyền truy cập"
+          '404':
+            description: Không tìm thấy đơn hàng hoặc giao hàng
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Không có đơn hàng hoặc giao hàng"
+          '500':
+            description: Lỗi máy chủ nội bộ
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Lỗi máy chủ nội bộ"
 
-
-
+  
 
   /flash-sale:
     get:
       tags:
         - FlashSale
       summary: Lấy danh sách Flash Sale
+      security:
+        - bearerAuth: []
       parameters:
         - name: page
           in: query
@@ -1977,6 +2318,8 @@ paths:
       tags: 
       - FlashSale
       summary: Tạo flash sale mới
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -2009,6 +2352,8 @@ paths:
       tags:
       - FlashSale
       summary: Cập nhật thông tin flash sale
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -2028,6 +2373,8 @@ paths:
       tags:
       - FlashSale
       summary: Xóa flash sale
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -2151,6 +2498,8 @@ paths:
       tags:
         - FlashSale
       summary: Tạo sản phẩm mới cho Flash Sale
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -3206,6 +3555,8 @@ paths:
       tags:
         - Permission
       summary: Tạo quyền mới
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -3239,6 +3590,8 @@ paths:
       tags:
         - Permission
       summary: Lấy danh sách tất cả quyền
+      security:
+        - bearerAuth: []
       parameters:
         - name: page
           in: query
@@ -3317,6 +3670,8 @@ paths:
       tags:
         - Permission
       summary: Lấy thông tin quyền theo ID
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -3360,6 +3715,8 @@ paths:
       tags:
         - Permission
       summary: Cập nhật quyền
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -3410,6 +3767,8 @@ paths:
       tags:
         - Permission
       summary: Xóa quyền
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -3444,6 +3803,8 @@ paths:
       tags:
         - Role
       summary: Tạo Role mới
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -3477,6 +3838,8 @@ paths:
       tags:
         - Role
       summary: Lấy danh sách tất cả Roles
+      security:
+        - bearerAuth: []
       parameters:
         - name: page
           in: query
@@ -3555,6 +3918,8 @@ paths:
       tags:
         - Role
       summary: Lấy thông tin Role theo ID
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -3598,6 +3963,8 @@ paths:
       tags:
         - Role
       summary: Cập nhật Role
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -3650,6 +4017,8 @@ paths:
       tags:
         - Role
       summary: Xóa Role
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -3684,6 +4053,8 @@ paths:
       tags:
         - UserRole
       summary: Tạo UserRole mới
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -3719,6 +4090,8 @@ paths:
       tags:
         - UserRole
       summary: Lấy thông tin UserRole theo ID người dùng
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -3848,6 +4221,8 @@ paths:
       tags:
         - RolePermission
       summary: Tạo RolePermission mới
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -3883,6 +4258,8 @@ paths:
       tags:
         - RolePermission
       summary: Lấy thông tin RolePermission theo ID Role
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: roleId
@@ -4014,6 +4391,8 @@ paths:
       tags:
         - Notifications
       summary: Lấy tất cả thông báo
+      security:
+        - bearerAuth: []
       parameters:
         - name: page
           in: query
@@ -4131,6 +4510,8 @@ paths:
       tags:
         - Notifications
       summary: Đánh dấu tất cả thông báo đã đọc
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Thành công
@@ -4168,6 +4549,8 @@ paths:
       tags:
         - Notifications
       summary: Lấy thông báo theo ID
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Thành công
@@ -4206,6 +4589,8 @@ paths:
       tags:
         - Notifications
       summary: Cập nhật thông báo
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -4258,6 +4643,8 @@ paths:
       tags:
         - Notifications
       summary: Xóa thông báo
+      security:
+        - bearerAuth: []
       responses:
         '204':
           description: Xóa thông báo thành công
@@ -4286,6 +4673,8 @@ paths:
         tags:
           - Reviews
         summary: Lấy tất cả đánh giá
+        security:
+        - bearerAuth: []
         parameters:
           - name: page
             in: query
@@ -4417,6 +4806,8 @@ paths:
       tags:
         - Reviews
       summary: Lấy đánh giá theo ID
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Thành công
@@ -4455,6 +4846,8 @@ paths:
       tags:
         - Reviews
       summary: Cập nhật đánh giá
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -4511,6 +4904,8 @@ paths:
       tags:
         - Reviews
       summary: Xóa đánh giá
+      security:
+        - bearerAuth: []
       responses:
         '204':
           description: Xóa đánh giá thành công
@@ -4534,7 +4929,113 @@ paths:
                   message:
                     type: string
                     example: "Lỗi máy chủ nội bộ"
-
+  /cart:
+    post:
+      tags:
+        - Cart
+      summary: Tạo giỏ hàng mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      item_id:
+                        type: string
+                      quantity:
+                        type: integer
+                      price:
+                        type: number
+      responses:
+        201:
+          description: Tạo giỏ hàng thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+        500:
+          description: Lỗi máy chủ nội bộ
+    get:
+      tags:
+        - Cart
+      summary: Lấy giỏ hàng của người dùng
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Lấy giỏ hàng thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+        401:
+          description: Không được phép
+        500:
+          description: Lỗi máy chủ nội bộ
+    delete:
+      tags:
+        - Cart
+      summary: Xóa giỏ hàng
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Xóa giỏ hàng thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        401:
+          description: Không được phép
+        500:
+          description: Lỗi máy chủ nội bộ
+  /cart/item:
+    delete:
+      tags:
+        - Cart
+      summary: Xóa mặt hàng khỏi giỏ hàng
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                itemId:
+                  type: string
+      responses:
+        200:
+          description: Xóa mặt hàng thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        401:
+          description: Không được phép
+        500:
+          description: Lỗi máy chủ nội bộ
 components:
   schemas:
     User:

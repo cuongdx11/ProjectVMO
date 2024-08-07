@@ -7,6 +7,7 @@ const crypto = require("crypto");
 const redisClient = require("../config/redisConfig");
 const Queue = require("bull");
 const { sequelize } = require('../config/dbConfig');
+const { Op } = require("sequelize");
 const UserRole = require("../models/userRoleModel");
 const UserNotifications = require('../models/userNotifications')
 const emailQueue = new Queue("email-queue", {

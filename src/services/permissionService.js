@@ -1,5 +1,6 @@
 const Permission = require('../models/permissionModel')
 const { sequelize } = require('../config/dbConfig');
+const { Op } = require("sequelize");
 const ErrorRes = require('../helpers/ErrorRes');
 const RolePermission = require('../models/rolePermissionModel');
 const {ROLE} = require('../constants/role')

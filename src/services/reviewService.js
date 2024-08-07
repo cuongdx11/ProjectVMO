@@ -1,5 +1,6 @@
 const Review = require("../models/reviewModel");
 const ErrorRes = require("../helpers/ErrorRes");
+const { Op } = require("sequelize");
 
 const getReviews = async ({
   page = 1,
